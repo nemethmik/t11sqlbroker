@@ -520,6 +520,37 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:t11sqlbroker.Models.BORequest">
+            <summary>
+            The Query command object
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BORequest.connection">
+            <summary>
+            Optional connection parameters, when the server is not preconfigured, 
+            the client can send in the connection parameters.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BORequest.boName">
+            <summary>
+            If the BO name is not defined on the URI then this an alternative possibility
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BORequest.command">
+            <summary>
+            GET (default) | ADD or POST | UPDATE or PUT | DELETE
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BORequest.timeOut">
+            <summary>
+            The timeout of the query in seconds
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BORequest.rawXml">
+            <summary>
+            When true the XML text from SAP is returned as is.
+            </summary>
+        </member>
         <member name="T:t11sqlbroker.Models.SQLQuery">
             <summary>
             The Query command object

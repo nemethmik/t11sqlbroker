@@ -18,7 +18,8 @@ namespace t11sqlbroker.Controllers {
 		}
 
 		//GET: api/SQL/DISCONNECT
-		public string Get(string command) {
+		[Route("api/SQL/{command}")]
+		public string Get([FromUri]string command) {
 			if (command.Equals("DISCONNECT")) {
 				DIConnection.Me.Dispose();
 				return command + " Done";

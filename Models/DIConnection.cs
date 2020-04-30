@@ -82,7 +82,8 @@ namespace t11sqlbroker.Models {
 				_company.SLDServer = connectionParams.SLDServer;
 				_company.DbUserName = connectionParams.DbUserName;
 				_company.DbPassword = connectionParams.DbPassword;
-				_company.UseTrusted = connectionParams.UseTrusted;
+				//UseTrusted must be false when DB User is defined, otherwise cannot connect to SBO-COMMON error is thrown on IIS
+				_company.UseTrusted = string.IsNullOrEmpty(connectionParams.DbUserName) ? connectionParams.UseTrusted : false;
 				_company.UserName = connectionParams.UserName;
 				_company.Password = connectionParams.Password;
 				_company.DbServerType = connectionParams.boDataServerType();

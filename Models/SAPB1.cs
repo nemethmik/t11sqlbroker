@@ -67,5 +67,51 @@ namespace t11sqlbroker.Models {
 				return result;
 			}
 		}
+
+		public static BOResult BORequest(BORequest q, string name, string id) {
+			System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+			sw.Start();
+			using (var t = DIConnection.startTransaction(q.connection)) { //Must be used with using !!!
+				string xmlText = getBOXml(t,name,id);
+				BOResult result = new BOResult();
+				if (string.IsNullOrEmpty(xmlText)) {
+					result.errorCode = -600811;
+					result.errorText = $"Not found {name} for ID {id}";
+				} else {
+					if (q.rawXml) result.rawXml = xmlText;
+					System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
+					xmlDoc.LoadXml(xmlText);
+					string jsonText = Newtonsoft.Json.JsonConvert.SerializeXmlNode(xmlDoc, Newtonsoft.Json.Formatting.Indented, false);
+					result.bo = Newtonsoft.Json.Linq.JToken.Parse(jsonText);
+				}
+				sw.Stop();
+				result.execMillis = (int)sw.Elapsed.TotalMilliseconds;
+				return result;
+			}
+		}
+		static string getBOXml(DIConnection.IConnRef t, string name,string id) {
+			switch (name) {
+				case "ProductionOrders": {
+					SAPbobsCOM.ProductionOrders bo = t.company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oProductionOrders);
+					return bo.GetByKey(int.Parse(id)) ? bo.GetAsXML() : null;
+				} 
+				case "InventoryGenExit": {
+					SAPbobsCOM.Documents bo = t.company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oInventoryGenExit);
+					return bo.GetByKey(int.Parse(id)) ? bo.GetAsXML() : null;
+				}
+				case "InventoryGenEntry": {
+					SAPbobsCOM.Documents bo = t.company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oInventoryGenEntry);
+					return bo.GetByKey(int.Parse(id)) ? bo.GetAsXML() : null;
+				}
+				case "Activity": {
+					SAPbobsCOM.ActivitiesService oActSrv = t.company.GetCompanyService().GetBusinessService(SAPbobsCOM.ServiceTypes.ActivitiesService);
+					SAPbobsCOM.ActivityParams oParams = oActSrv.GetDataInterface(SAPbobsCOM.ActivitiesServiceDataInterfaces.asActivityParams);
+					oParams.ActivityCode = int.Parse(id);
+					SAPbobsCOM.Activity oAct = oActSrv.GetActivity(oParams);
+					return oAct != null ? oAct.ToXMLString() : null;
+				}
+				default: throw new Exception("Unsupported BO type " + name);
+			}
+		}
 	}
 }
