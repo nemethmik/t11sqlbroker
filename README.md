@@ -65,4 +65,68 @@ These are for
 - DELETE api/BO/ProductionOrders/99 to delete an existing PO, actually it is not possible for POs in SAP B1, but applicable for a couple of other entities. Activities, for example, can be deleted.
 
 Here are a couple of examples for getters. The HTTP body may contain the connection parameters and the entire request can be defined in the body, the BO name and ID included.
+```json
+http://MIKISURFACE/t11sqlbroker/Api/BO/ProductionOrders/1
+{ 
+	connection: { 
+		CompanyDB:"SBODemoUS", 
+		Server:"MIKISURFACE", 
+		LicenseServer:"MIKISURFACE:30000", 
+		SLDServer:"MIKISURFACE:40000", 
+		DbUserName:"sa", 
+		DbPassword:"B1Admin", 
+		UseTrusted:false, 
+		UserName:"manager", 
+		Password:"B1Admin", 
+		DbServerType:"MSSQL2016" 
+		
+	}, 
+	timeOut:10, 
+	rawXml:true, 
+}
+```
+The response is something like:
+```json
+{
+    "errorCode": 0,
+    "errorText": null,
+    "execMillis": 156,
+    "bo": {
+        "?xml": {
+            "@version": "1.0",
+            "@encoding": "UTF-16"
+        },
+        "BOM": {
+            "BO": {
+                "AdmInfo": {
+                    "Object": "202"
+                },
+                "OWOR": {
+                    "row": {
+                        "DocEntry": "1",
+                        "DocNum": "1",
+                        "Series": "23",
+                        "ItemCode": "P10001",
+                        "Status": "L",
+                        "Type": "S",
+                        "PlannedQty": "20.000000",
+                        "CmpltQty": "20.000000",
+                        "RjctQty": "0.000000",
+                        "PostDate": "20060110",
+                        "DueDate": "20060115",
+
+                      }
+                }
+            }
+        }
+    },
+    "rawXml": "<?xml version=\"1.0\" encoding=\"UTF-16\"?><BOM><BO><AdmInfo><Object>202</Object></AdmInfo><OWOR><row><DocEntry>1</DocEntry><DocNum>1</DocNum><Series>23</Series><ItemCode>P10001</ItemCode><Status>L</Status><Type>S</Type><PlannedQty>20.000000</PlannedQty><CmpltQty>20.000000</CmpltQty><RjctQty>0.000000</RjctQty><PostDate>20060110</PostDate><DueDate>20060115</DueDate><OriginAbs nil=\"true\">0</ ...
+    RtCalcProp><Status>P</Status><ItemName>Labor Hours Production</ItemName></row></WOR1></BO></BOM>"
+}
+```
+
+- http://MIKISURFACE/t11sqlbroker/Api/BO/Activity/1
+- http://MIKISURFACE/t11sqlbroker/Api/BO/InventoryGenEntry/1
+- http://MIKISURFACE/t11sqlbroker/Api/BO/InventoryGenExit/11
+
 
