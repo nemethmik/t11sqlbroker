@@ -9,11 +9,13 @@ using t11sqlbroker.Models;
 namespace t11sqlbroker.Controllers {
 	public class SQLController : ApiController {
 		// GET: api/SQL
-		public SQLResult Get([FromBody]SQLQuery value) {
+		public HttpResponseMessage Get([FromBody]SQLQuery value) {
 			try {
-				return SAPB1.SQLQuery(value);
+				var result = SAPB1.SQLQuery(value);
+				return Request.CreateResponse<SQLResult>(result.statusCode, result);
 			} catch (Exception e) {
-				return new SQLResult { errorCode = -1, errorText = e.Message, errorStackTrace = e.StackTrace };
+				var result = new SQLResult {statusCode = HttpStatusCode.BadRequest, errorCode = e.HResult, errorText = e.Message, errorStackTrace = e.StackTrace };
+				return Request.CreateResponse<SQLResult>(result.statusCode, result);
 			}
 		}
 
@@ -31,20 +33,14 @@ namespace t11sqlbroker.Controllers {
 		}
 
 		// POST: api/SQL
-		public SQLResult Post([FromBody]SQLQuery value) {
+		public HttpResponseMessage Post([FromBody]SQLQuery value) {
 			try {
-				return SAPB1.SQLQuery(value);
+				var result = SAPB1.SQLQuery(value);
+				return Request.CreateResponse<SQLResult>(result.statusCode, result);
 			} catch (Exception e) {
-				return new SQLResult { errorCode = -1, errorText = e.Message, errorStackTrace = e.StackTrace };
+				var result = new SQLResult {statusCode = HttpStatusCode.BadRequest, errorCode = -1, errorText = e.Message, errorStackTrace = e.StackTrace };
+				return Request.CreateResponse<SQLResult>(result.statusCode, result);
 			}
 		}
-
-		// PUT: api/SQL/5
-		//public void Put(int id, [FromBody]string value) {
-		//}
-
-		// DELETE: api/SQL/5
-		//public void Delete(int id) {
-		//}
 	}
 }

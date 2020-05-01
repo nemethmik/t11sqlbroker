@@ -21,6 +21,7 @@ namespace t11sqlbroker.Models {
 				SAPbobsCOM.Recordset rs = t.company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
 				rs.DoQuery(q.SQL); 
 				SQLResult result = new SQLResult();
+				result.statusCode = System.Net.HttpStatusCode.OK;
 				//These mustn't be called since we get a transaction error
 				//result.errorCode = t.company.GetLastErrorCode();
 				//result.errorText = t.company.GetLastErrorDescription();

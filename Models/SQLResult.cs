@@ -43,6 +43,10 @@ namespace t11sqlbroker.Models {
 			public string value;
 		}
 		/// <summary>
+		/// The HTTP status code.
+		/// </summary>
+		public System.Net.HttpStatusCode statusCode;
+		/// <summary>
 		/// The error code, if there is an error.
 		/// </summary>
 		public int errorCode;
