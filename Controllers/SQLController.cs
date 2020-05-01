@@ -13,7 +13,7 @@ namespace t11sqlbroker.Controllers {
 			try {
 				return SAPB1.SQLQuery(value);
 			} catch (Exception e) {
-				return new SQLResult { errorCode = -1, errorText = e.Message + " in api/SQL" };
+				return new SQLResult { errorCode = -1, errorText = e.Message, errorStackTrace = e.StackTrace };
 			}
 		}
 
@@ -21,8 +21,12 @@ namespace t11sqlbroker.Controllers {
 		[Route("api/SQL/{command}")]
 		public string Get([FromUri]string command) {
 			if (command.Equals("DISCONNECT")) {
-				DIConnection.Me.Dispose();
-				return command + " Done";
+				try {
+					DIConnection.Me.Dispose();
+					return command + " Done";
+				} catch (Exception e) {
+					return e.Message + " : " + e.StackTrace;
+				}
 			} return command + " Unknown";
 		}
 
@@ -31,7 +35,7 @@ namespace t11sqlbroker.Controllers {
 			try {
 				return SAPB1.SQLQuery(value);
 			} catch (Exception e) {
-				return new SQLResult { errorCode = -1, errorText = e.Message };
+				return new SQLResult { errorCode = -1, errorText = e.Message, errorStackTrace = e.StackTrace };
 			}
 		}
 

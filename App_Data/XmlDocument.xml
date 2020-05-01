@@ -520,6 +520,18 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:t11sqlbroker.Models.SAPB1.BORequest(t11sqlbroker.Models.BORequest,System.String,System.String,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            The generic business logic behind SAP DI BO requests: GET, POST/Add, PUT/Update, DELETE/Delete
+            </summary>
+            <param name="q"></param>
+            <param name="name"></param>
+            <param name="id"></param>
+            <param name="delete"></param>
+            <param name="put"></param>
+            <param name="post"></param>
+            <returns></returns>
+        </member>
         <member name="T:t11sqlbroker.Models.BORequest">
             <summary>
             The Query command object
@@ -549,6 +561,21 @@
         <member name="F:t11sqlbroker.Models.BORequest.rawXml">
             <summary>
             When true the XML text from SAP is returned as is.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BORequest.boXml">
+            <summary>
+            The BO XML to create or update the DI object
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BORequest.bo">
+            <summary>
+            The BO data in JSON format
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BORequest.xmlSchema">
+            <summary>
+            The caller wants the XML Schema for the BO, too.
             </summary>
         </member>
         <member name="T:t11sqlbroker.Models.SQLQuery">
@@ -586,6 +613,148 @@
             <summary>
             When, true column info is added along with the rows.
             This adds 3 - 5 seconds extra to the total execution time.
+            </summary>
+        </member>
+        <member name="T:t11sqlbroker.Models.BOResult">
+            <summary>
+            The result object for the HTTP response for BO Requests
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BOResult.statusCode">
+            <summary>
+            The HTTP status code.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BOResult.errorCode">
+            <summary>
+            The error code, if there is an error.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BOResult.errorText">
+            <summary>
+            If there is an error the error text.
+            If not found the HTTP not Found status code is here
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BOResult.errorStackTrace">
+            <summary>
+            Error stack trace for debugging purposes
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BOResult.found">
+            <summary>
+            Returns if the object was found. For example after a deletion, no object is returned
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BOResult.id">
+            <summary>
+            The ID of the BO which was requested to be get/update/delete.
+            ID is not returned after POST. It is available in the BO object returned ater addition.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BOResult.execMillis">
+            <summary>
+            The milliseconds of the execution time for performance benchmarking purposes. 
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BOResult.bo">
+            <summary>
+            Te BO data in JSON format
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BOResult.rawXml">
+            <summary>
+            The XML string of the BO, when requested
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BOResult.xmlSchema">
+            <summary>
+            The XML schema of the BO, when requested
+            </summary>
+        </member>
+        <member name="T:t11sqlbroker.Models.SQLResult">
+            <summary>
+            The result of the HTTP response for an SQL Query request.
+            </summary>
+        </member>
+        <member name="T:t11sqlbroker.Models.SQLResult.Column">
+            <summary>
+            When column information was requested, some details about the columns
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.Column.name">
+            <summary>
+            The column/field name
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.Column.dataType">
+            <summary>
+            The data type of the column: db_Alpha for strings, for example.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.Column.subType">
+            <summary>
+            The sub type of the field as defined by SAP
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.Column.validValues">
+            <summary>
+            The valid value list. Most typical for Y/N columns
+            </summary>
+        </member>
+        <member name="T:t11sqlbroker.Models.SQLResult.ValidValue">
+            <summary>
+            The actual valid values for a field where valid values are defined in SAP B1
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.ValidValue.description">
+            <summary>
+            The display text of the fiield
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.ValidValue.value">
+            <summary>
+            The code/key value of the list element
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.errorCode">
+            <summary>
+            The error code, if there is an error.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.errorText">
+            <summary>
+            If there is an error the error text
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.errorStackTrace">
+            <summary>
+            Error stack trace for debugging purposes
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.execMillis">
+            <summary>
+            The milliseconds of the execution time for performance benchmarking purposes. 
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.columns">
+            <summary>
+            When requested the array of column information.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.rows">
+            <summary>
+            The details of the rows for ADO.NET requests
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.data">
+            <summary>
+            The query details for DI Recordset
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.rawXml">
+            <summary>
+            The data in XML format for DI Recordset queries
             </summary>
         </member>
     </members>

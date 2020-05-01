@@ -8,39 +8,45 @@ using t11sqlbroker.Models;
 
 namespace t11sqlbroker.Controllers {
 	public class BOController : ApiController {
-		// GET: api/BO
-		//public IEnumerable<string> Get()
-		//{
-		//    return new string[] { "value1", "value2" };
-		//}
-
 		// GET: api/BO/name
 		[Route("api/BO/{name}/{id}")]
 		public BOResult Get([FromBody]BORequest boReq, string name, string id) {
-			//return $"{name}({id}) GET";
 			try {
-				return SAPB1.BORequest(boReq,name,id);
+				return SAPB1.BORequest(q:boReq,name:name,id:id);
 			} catch (Exception e) {
-				return new BOResult { errorCode = -1, errorText = e.Message };
+				return new BOResult { errorCode = -1, errorText = e.Message, errorStackTrace = e.StackTrace };
 			}
 		}
 
 		// POST: api/BO/ProductionOrder - to create a BO
 		[Route("api/BO/{name}")]
-		public string Post([FromBody]string value, string name) {
-			return $"{name} with ({value}) CREATED";
+		public BOResult Post([FromBody]BORequest boReq, string name) {
+			try {
+				BOResult result = SAPB1.BORequest(q:boReq, name:name, id:null, post:true);
+				return result;
+			} catch (Exception e) {
+				return new BOResult { errorCode = -1, errorText = e.Message, errorStackTrace = e.StackTrace };
+			}
 		}
 
 		// PUT: api/BO/ProductionOrder/6756 - to update
 		[Route("api/BO/{name}/{id}")]
-		public string Put([FromBody]string value, string name, string id) {
-			return $"{name}({id}) with {value} UPDATED";
+		public BOResult Put([FromBody]BORequest boReq, string name, string id) {
+			try {
+				return SAPB1.BORequest(q: boReq, name: name, id: id, put: true);
+			} catch (Exception e) {
+				return new BOResult { errorCode = -1, errorText = e.Message, errorStackTrace = e.StackTrace };
+			}
 		}
 
 		// DELETE: api/BO/5
 		[Route("api/BO/{name}/{id}")]
-		public string Delete([FromBody]string value, string name, string id) {
-			return $"{name}({id}) DELETED";
+		public BOResult Delete([FromBody]BORequest boReq, string name, string id) {
+			try {
+				return SAPB1.BORequest(q: boReq, name: name, id: id, delete: true);
+			} catch (Exception e) {
+				return new BOResult { errorCode = -1, errorText = e.Message, errorStackTrace = e.StackTrace };
+			}
 		}
 	}
 }
