@@ -15,6 +15,7 @@ namespace t11sqlbroker.Models {
 		}
 		public static SQLResult SQLQuery(SQLQuery q) {
 			System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+			if(q.connection == null) { throw new Exception("Connection not defined for SQLQuery"); }
 			sw.Start();
 			using (var t = DIConnection.startTransaction(q.connection)) { //Must be used with using !!!
 				SAPbobsCOM.Recordset rs = t.company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
@@ -27,22 +28,33 @@ namespace t11sqlbroker.Models {
 				if (q.rawXml) result.rawXml = xmlText;
 				System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
 				xmlDoc.LoadXml(xmlText);
-				System.Xml.XmlNodeList rows = xmlDoc.SelectNodes("//row");
-				for (int i = 0; i < rows.Count; i++) {
-					System.Xml.XmlNode n = rows.Item(i);
-					System.Xml.XmlNodeList columns = n.ChildNodes;
-					Newtonsoft.Json.Linq.JObject o = new Newtonsoft.Json.Linq.JObject();
-					for (int j = 0; j < rows.Count; j++) {
-						System.Xml.XmlNode c = columns.Item(j);
-						if (c != null) {
-							string cn = c.Name;
-							string cv = c.InnerText;
-							o.Add(new Newtonsoft.Json.Linq.JProperty(cn, cv));
-						}
-					}
-					result.rows.Add(o);
-				}
-				//string jsonText = Newtonsoft.Json.JsonConvert.SerializeXmlNode(xmlDoc);
+				//System.Xml.XmlNodeList rows = xmlDoc.SelectNodes("//row");
+				//for (int i = 0; i < rows.Count; i++) {
+				//	System.Xml.XmlNode n = rows.Item(i);
+				//	System.Xml.XmlNodeList columns = n.ChildNodes;
+				//	Newtonsoft.Json.Linq.JObject o = new Newtonsoft.Json.Linq.JObject();
+				//	for (int j = 0; j < rows.Count; j++) {
+				//		System.Xml.XmlNode c = columns.Item(j);
+				//		if (c != null) {
+				//			string cn = c.Name;
+				//			string cv = c.InnerText;
+				//			o.Add(new Newtonsoft.Json.Linq.JProperty(cn, cv));
+				//		}
+				//	}
+				//	result.rows.Add(o);
+				//}
+				string jsonText = Newtonsoft.Json.JsonConvert.SerializeXmlNode(xmlDoc, Newtonsoft.Json.Formatting.Indented, false);
+				result.data = Newtonsoft.Json.Linq.JToken.Parse(jsonText);
+				/* 
+				 * In this section I tried to extract out the actual rows from the JToken object, but it would require a lot of time
+				 * So, I'll keep the rows for ADO.NET implementation
+				 
+				var bom = result.data?.Children().ElementAt(1);
+				var bo = bom?.First;
+				var oclg = bo?.First().First().Children().ElementAt(1);
+				var row = oclg?.Children();
+				result.rows = row?.First();
+				*/
 				if (q.columnInfo) {
 					int cc = rs.Fields.Count;
 					SAPbobsCOM.Fields fields = rs.Fields;

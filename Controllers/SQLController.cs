@@ -13,7 +13,7 @@ namespace t11sqlbroker.Controllers {
 			try {
 				return SAPB1.SQLQuery(value);
 			} catch (Exception e) {
-				return new SQLResult { errorCode = -1, errorText = e.Message };
+				return new SQLResult { errorCode = -1, errorText = e.Message + " in api/SQL" };
 			}
 		}
 

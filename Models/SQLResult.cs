@@ -20,7 +20,9 @@ namespace t11sqlbroker.Models {
 		public string errorText;
 		public int execMillis;
 		public List<Column> columns = new List<Column>();
-		public Newtonsoft.Json.Linq.JArray rows = new Newtonsoft.Json.Linq.JArray();
+		//public Newtonsoft.Json.Linq.JArray rows = new Newtonsoft.Json.Linq.JArray();
+		public Newtonsoft.Json.Linq.JToken rows;
+		public Newtonsoft.Json.Linq.JToken data;
 		public string rawXml;
 	}
 }
