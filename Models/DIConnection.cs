@@ -88,6 +88,7 @@ namespace t11sqlbroker.Models {
 				_company.Password = connectionParams.Password;
 				_company.DbServerType = connectionParams.boDataServerType();
 				int status = _company.Connect();
+				_company.XMLAsString = true; //THIS IS TERRIBLY IMPORTANT for XML handling
 				System.Diagnostics.Debug.WriteLine("SAP DI is connected");
 			}
 			if (!this._company.Connected) {

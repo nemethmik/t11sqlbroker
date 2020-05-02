@@ -8,10 +8,14 @@ using t11sqlbroker.Models;
 
 namespace t11sqlbroker.Controllers {
 	public class BOController : ApiController {
+		void checkBoReqParameter(BORequest boReq) {
+			if (boReq == null) throw new Exception("The body is missing or not formatted correctly. Maybe just a comma is missing between two attributes.");
+		}
 		// GET: api/BO/name
 		[Route("api/BO/{name}/{id}")]
 		public HttpResponseMessage Get([FromBody]BORequest boReq, string name, string id) {
 			try {
+				checkBoReqParameter(boReq);
 				var result = SAPB1.BORequest(q:boReq,name:name,id:id);
 				return Request.CreateResponse<BOResult>(result.statusCode, result);
 			} catch (Exception e) {
@@ -24,6 +28,7 @@ namespace t11sqlbroker.Controllers {
 		[Route("api/BO/{name}")]
 		public HttpResponseMessage Post([FromBody]BORequest boReq, string name) {
 			try {
+				checkBoReqParameter(boReq);
 				var result = SAPB1.BORequest(q:boReq, name:name, id:null, post:true);
 				return Request.CreateResponse<BOResult>(result.statusCode, result);
 			} catch (Exception e) {
@@ -36,6 +41,7 @@ namespace t11sqlbroker.Controllers {
 		[Route("api/BO/{name}/{id}")]
 		public HttpResponseMessage Put([FromBody]BORequest boReq, string name, string id) {
 			try {
+				checkBoReqParameter(boReq);
 				var result = SAPB1.BORequest(q: boReq, name: name, id: id, put: true);
 				return Request.CreateResponse<BOResult>(result.statusCode, result);
 			} catch (Exception e) {
@@ -48,6 +54,7 @@ namespace t11sqlbroker.Controllers {
 		[Route("api/BO/{name}/{id}")]
 		public HttpResponseMessage Delete([FromBody]BORequest boReq, string name, string id) {
 			try {
+				checkBoReqParameter(boReq);
 				BOResult result = SAPB1.BORequest(q: boReq, name: name, id: id, delete: true);
 				return Request.CreateResponse<BOResult>(result.statusCode, result);
 			} catch (Exception e) {

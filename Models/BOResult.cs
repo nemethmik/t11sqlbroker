@@ -50,5 +50,10 @@ namespace t11sqlbroker.Models {
 		/// The XML schema of the BO, when requested
 		/// </summary>
 		public string xmlSchema;
+		/// <summary>
+		/// The effective connection details: Profile, CompanyDB, Server, DBUser, UserName.
+		/// No passwords and no other details are returned.
+		/// </summary>
+		public ConnectionParams connection = new ConnectionParams();
 	}
 }

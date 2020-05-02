@@ -167,11 +167,13 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\ConfigResult.cs" />
     <Compile Include="Models\ProductionOrder.cs" />
     <Compile Include="Models\ConnectionParams.cs" />
     <Compile Include="Models\DIConnection.cs" />
     <Compile Include="Models\SAPB1.cs" />
     <Compile Include="Models\BORequest.cs" />
+    <Compile Include="Models\SQLBrokerConfig.cs" />
     <Compile Include="Models\SQLQuery.cs" />
     <Compile Include="Models\BOResult.cs" />
     <Compile Include="Models\SQLResult.cs" />
@@ -213,6 +215,12 @@
       <DependentUpon>Dockerfile</DependentUpon>
     </None>
     <Content Include="README.md" />
+    <Content Include="inventry01.json" />
+    <Content Include="invexit01.json" />
+    <Content Include="invexit02updatecomments.json" />
+    <Content Include="productionorders01.json" />
+    <Content Include="productionorders02.json" />
+    <Content Include="productionorderupdateroutestagestatus01.json" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.4.1.js" />
     <Content Include="Scripts\jquery-3.4.1.min.js" />

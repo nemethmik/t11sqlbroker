@@ -8,9 +8,14 @@ using t11sqlbroker.Models;
 
 namespace t11sqlbroker.Controllers {
 	public class SQLController : ApiController {
+		void checkSQLReqParameter(SQLQuery value) {
+			if (value == null) throw new Exception("The body is missing or not formatted correctly. Maybe just a comma is missing between two attributes.");
+		}
 		// GET: api/SQL
+		[Route("api/SQL")]
 		public HttpResponseMessage Get([FromBody]SQLQuery value) {
 			try {
+				checkSQLReqParameter(value);
 				var result = SAPB1.SQLQuery(value);
 				return Request.CreateResponse<SQLResult>(result.statusCode, result);
 			} catch (Exception e) {
@@ -20,21 +25,32 @@ namespace t11sqlbroker.Controllers {
 		}
 
 		//GET: api/SQL/DISCONNECT
-		[Route("api/SQL/{command}")]
-		public string Get([FromUri]string command) {
-			if (command.Equals("DISCONNECT")) {
+		[Route("api/SQL/{command}/{profile}")]
+		public HttpResponseMessage Get([FromUri]string command,string profile) {
+			if (command.Equals("Disconnect")) {
 				try {
 					DIConnection.Me.Dispose();
-					return command + " Done";
+					return Request.CreateResponse(command + " Done");
 				} catch (Exception e) {
-					return e.Message + " : " + e.StackTrace;
+					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, e.Message + " : " + e.StackTrace);
 				}
-			} return command + " Unknown";
+			} else if (command.Equals("GetConfig")) {
+				try {
+					var cp = ConnectionParams.GetConnectionProfile(profile);//"SQLBrokerDefault"
+					return Request.CreateResponse<ConnectionParams>(HttpStatusCode.OK,cp);
+				} catch (Exception e) {
+					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, e.Message + " : " + e.StackTrace);
+				}
+			} else {
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, command + " Unknown");
+			}
 		}
 
 		// POST: api/SQL
+		[Route("api/SQL")]
 		public HttpResponseMessage Post([FromBody]SQLQuery value) {
 			try {
+				checkSQLReqParameter(value);
 				var result = SAPB1.SQLQuery(value);
 				return Request.CreateResponse<SQLResult>(result.statusCode, result);
 			} catch (Exception e) {

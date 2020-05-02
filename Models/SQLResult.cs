@@ -79,5 +79,10 @@ namespace t11sqlbroker.Models {
 		/// The data in XML format for DI Recordset queries
 		/// </summary>
 		public string rawXml;
+		/// <summary>
+		/// The effective connection details: Profile, CompanyDB, Server, DBUser, UserName.
+		/// No passwords and no other details are returned.
+		/// </summary>
+		public ConnectionParams connection = new ConnectionParams();
 	}
 }

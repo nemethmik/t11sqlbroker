@@ -493,10 +493,118 @@
             <param name="name">Item Code</param>
             <returns>Returns a list of production orders</returns>
         </member>
+        <member name="F:t11sqlbroker.Models.ConfigResult.statusCode">
+            <summary>
+            The HTTP status code.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.ConfigResult.errorCode">
+            <summary>
+            The error code, if there is an error.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.ConfigResult.errorText">
+            <summary>
+            If there is an error the error text
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.ConfigResult.errorStackTrace">
+            <summary>
+            Error stack trace for debugging purposes
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.ConfigResult.execMillis">
+            <summary>
+            The milliseconds of the execution time for performance benchmarking purposes. 
+            </summary>
+        </member>
         <member name="T:t11sqlbroker.Models.ProductionOrder">
             <summary>
             For more info check out SAP B1 DI API documentation
             </summary>
+        </member>
+        <member name="T:t11sqlbroker.Models.ConnectionParams">
+            <summary>
+            The connection details to reference a profile or define all the parameters to build a connection to a SAP B1 system.
+            The server parameters may prevent the client to define a connection.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.ConnectionParams.Profile">
+            <summary>
+            When a profile is defined the rest of the parameters are ignored.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.ConnectionParams.CompanyDB">
+            <summary>
+            The SAP B1 company database name
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.ConnectionParams.Server">
+            <summary>
+            The database server
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.ConnectionParams.LicenseServer">
+            <summary>
+            The licen server URL including the port numbet, typically 30000
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.ConnectionParams.SLDServer">
+            <summary>
+            The SAP landscape server URL with the port number, typically 40000
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.ConnectionParams.DbUserName">
+            <summary>
+            The database user
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.ConnectionParams.DbPassword">
+            <summary>
+            The database user's password
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.ConnectionParams.UseTrusted">
+            <summary>
+            Define it as false, unless you know what you are doing.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.ConnectionParams.UserName">
+            <summary>
+            The SAP B1 user name, manager, for example
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.ConnectionParams.Password">
+            <summary>
+            The password of the SAP B1 user
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.ConnectionParams.DbServerType">
+            <summary>
+            The server type: HANA, MSSQL2016
+            </summary>
+        </member>
+        <member name="M:t11sqlbroker.Models.ConnectionParams.GetConnectionProfile(System.String)">
+            <summary>
+            Returns connection parameter values from Web.config
+            <configuration>	
+            <configSections>
+            		<section name = "SQLBrokerDefault" type="System.Configuration.SingleTagSectionHandler"/>
+            	</configSections>
+            	<SQLBrokerDefault CompanyDB = "SBODemoUS" Server="MIKISURFACE" LicenseServer="MIKISURFACE:30000"
+            		SLDServer="MIKISURFACE:40000" DbUserName="sa" DbPassword="B1Admin" UserName="manager" Password="B1Admin"
+            		DbServerType="MSSQL2016"/>
+            	....
+            </configuration>
+            </summary>
+            <param name="profile"></param>
+            <returns></returns>
+        </member>
+        <member name="M:t11sqlbroker.Models.ConnectionParams.boDataServerType">
+            <summary>
+            Converts the STRING database type to SAPbobsCOM.BoDataServerTypes
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:t11sqlbroker.Models.DIConnection">
             <summary>
@@ -672,6 +780,12 @@
             The XML schema of the BO, when requested
             </summary>
         </member>
+        <member name="F:t11sqlbroker.Models.BOResult.connection">
+            <summary>
+            The effective connection details: Profile, CompanyDB, Server, DBUser, UserName.
+            No passwords and no other details are returned.
+            </summary>
+        </member>
         <member name="T:t11sqlbroker.Models.SQLResult">
             <summary>
             The result of the HTTP response for an SQL Query request.
@@ -760,6 +874,12 @@
         <member name="F:t11sqlbroker.Models.SQLResult.rawXml">
             <summary>
             The data in XML format for DI Recordset queries
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.connection">
+            <summary>
+            The effective connection details: Profile, CompanyDB, Server, DBUser, UserName.
+            No passwords and no other details are returned.
             </summary>
         </member>
     </members>
