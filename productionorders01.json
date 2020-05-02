@@ -1,0 +1,47 @@
+{ 
+  comment: "This was the original and when WOR is defined the lines override BOM", 
+	connection: { 
+		Profile:"MikiTest",
+	}, 
+	bo: {
+		"BOM": {
+		  "BO": {
+		      "AdmInfo": {
+		          "Object": "202"
+		      },
+		      "OWOR": {
+		          "row": {
+		              "Series": "23",
+		              "ItemCode": "P10002",
+		              "Type": "S",
+		              "PlannedQty": "20.000000",
+		              "DueDate": "20200715",
+		              "Warehouse": "01",
+		              "StartDate": "20200710",
+		              "Priority": "100"
+		          }
+		      },
+		      "WOR1": {
+		          "row": [
+		              {
+		                  "ItemCode": "C00001",
+		                  "BaseQty": "1.000000",
+		                  "IssueType": "M",
+		                  "wareHouse": "01",
+		                  "AdditQty": "0.000000",
+		                  "Status": "P"
+		              },
+		              {
+		                  "ItemCode": "C00003",
+		                  "BaseQty": "1.000000",
+		                  "IssueType": "M",
+		                  "AdditQty": "2.000000"
+		              }
+		          ]
+		      }
+		  }
+		}
+	},
+	timeOut:10, 
+	rawXml:false 
+}

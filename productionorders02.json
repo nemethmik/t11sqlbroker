@@ -1,0 +1,31 @@
+
+
+{
+  comment: "This works excellently, too, the rows are automatically created from the BOM", 
+	connection: { 
+		Profile:"MikiTest",
+	}, 
+	bo: {
+		"BOM": {
+		  "BO": {
+		      "AdmInfo": {
+		          "Object": "202"
+		      },
+		      "OWOR": {
+		          "row": {
+		              "Series": "23",
+		              "ItemCode": "P20003",
+		              "Type": "S",
+		              "PlannedQty": "10.000000",
+		              "DueDate": "20200816",
+		              "Warehouse": "01",
+		              "StartDate": "20200810",
+		              "Priority": "100"
+		          }
+		      },
+		  }
+		}
+	},
+	timeOut:10, 
+	rawXml:false, 
+}

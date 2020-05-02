@@ -1,0 +1,103 @@
+{
+"BOM": {
+  "BO": {
+      "AdmInfo": {
+          "Object": "202"
+      },
+      "OWOR": {
+          "row": {
+            "DocEntry": "162",
+            "DocNum": "162",
+            "Series": "23",
+            "ItemCode": "P20003",
+            "Status": "P",
+            "DueDate": "20200816",
+          }
+      },
+      "WOR1": {
+          "row": [
+              {
+                  "DocEntry": "162",
+                  "LineNum": "0",
+                  "ItemCode": "C00012",
+                  "ItemType": "4",
+                  "StartDate": "20200810",
+                  "EndDate": "20200816",
+                  "StageId": "1",
+                  "Status": "P",
+              },
+              {
+                  "DocEntry": "162",
+                  "LineNum": "1",
+                  "ItemCode": "R300005",
+                  "ItemType": "290",
+                  "StartDate": "20200810",
+                  "EndDate": "20200816",
+                  "StageId": "1",
+                  "Status": "P",
+              },
+              {
+                  "DocEntry": "162",
+                  "LineNum": "2",
+                  "ItemCode": "R300007",
+                  "ItemType": "290",
+                  "StartDate": "20200810",
+                  "EndDate": "20200816",
+                  "StageId": "1",
+                  "Status": "P",
+              },
+              {
+                  "DocEntry": "162",
+                  "LineNum": "3",
+                  "ItemCode": "C00013",
+                  "ItemType": "4",
+                  "StartDate": "20200810",
+                  "EndDate": "20200816",
+                  "StageId": "2",
+                  "Status": "P",
+              },
+              {
+                  "DocEntry": "162",
+                  "LineNum": "4",
+                  "ItemCode": "R300005",
+                  "ItemType": "290",
+                  "StartDate": "20200810",
+                  "EndDate": "20200816",
+                  "StageId": "2",
+                  "Status": "P",
+              },
+              {
+                  "DocEntry": "162",
+                  "LineNum": "5",
+                  "ItemCode": "R300006",
+                  "ItemType": "290",
+                  "StartDate": "20200810",
+                  "EndDate": "20200816",
+                  "StageId": "2",
+                  "Status": "P",
+              }
+          ]
+      },
+      "WOR4": {
+          "row": [
+              {
+                  "DocEntry": "162",
+                  "StageId": "1",
+                  "SeqNum": "1",
+                  "StgEntry": "1",
+                  "Name": "Cabinet Assembly",
+                  "Status": "P",
+              },
+              {
+                  "DocEntry": "162",
+                  "StageId": "2",
+                  "SeqNum": "2",
+                  "StgEntry": "2",
+                  "Name": "Disk Assembly",
+                  "Status": "P",
+              }
+          ]
+      }
+  }
+}
+}

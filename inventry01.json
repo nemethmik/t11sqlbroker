@@ -1,0 +1,32 @@
+{
+  comment:"This worked as Receive from Production", 
+  connection: { 
+    Profile:"MikiTest",
+  }, 
+  "bo": {
+    "BOM": {
+        "BO": {
+            "AdmInfo": {
+                "Object": "59"
+            },
+            "OIGN": {
+                "row": {
+                    "Comments": "ZZZZZZZZZZZZ",
+                    "JrnlMemo": "Receipt from Production from SQL Broker",
+                }
+            },
+            "IGN1": {
+                "row": {
+                    "BaseRef": "162",
+                    "BaseType": "202",
+                    "BaseEntry": "162",
+                    "Quantity": "1.000000",
+                    "WhsCode": "01"
+                }
+            }
+        }
+    }
+  },
+  timeOut:10, 
+  rawXml:false, 
+}

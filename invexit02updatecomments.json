@@ -1,0 +1,23 @@
+{
+  comment:"This worked as Issue for production", 
+  connection: { 
+    Profile:"MikiTest",
+  }, 
+    "bo": {
+      "BOM": {
+          "BO": {
+              "AdmInfo": {
+                  "Object": "60"
+              },
+              "OIGE": {
+                  "row": {
+                      "Comments": "ZZZZZZZZZZZZZZ",
+                      "JrnlMemo": "Issue for Production from PDC Terminal"
+                  }
+              },
+          }
+      }
+  },
+  timeOut:10, 
+  rawXml:false, 
+}

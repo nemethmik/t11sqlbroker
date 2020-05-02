@@ -1,0 +1,44 @@
+  {
+    comment:"This worked as Issue for production", 
+    connection: { 
+      Profile:"MikiTest",
+    }, 
+      "bo": {
+        "BOM": {
+            "BO": {
+                "AdmInfo": {
+                    "Object": "60"
+                },
+                "OIGE": {
+                    "row": {
+                        "Ref1": "2",
+                        "Comments": "YYYYYYYYYYYYYYYYY",
+                        "JrnlMemo": "Issue for Production"
+                    }
+                },
+                "IGE1": {
+                    "row": [
+                        {
+                            "BaseRef": "162",
+                            "BaseType": "202",
+                            "BaseEntry": "162",
+                            "BaseLine": "0",
+                            "Quantity": "1.000000",
+                            "WhsCode": "01"
+                        },
+                        {
+                            "BaseRef": "162",
+                            "BaseType": "202",
+                            "BaseEntry": "162",
+                            "BaseLine": "3",
+                            "Quantity": "1.000000",
+                            "WhsCode": "01"
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    timeOut:10, 
+    rawXml:false, 
+  }
