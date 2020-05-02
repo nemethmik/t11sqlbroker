@@ -66,7 +66,7 @@ These are for
 
 Here are a couple of examples for getters. The HTTP body may contain the connection parameters and the entire request can be defined in the body, the BO name and ID included.
 ```json
-http://MIKISURFACE/t11sqlbroker/Api/BO/ProductionOrders/1
+GET http://MIKISURFACE/t11sqlbroker/Api/BO/ProductionOrders/1
 { 
 	connection: { 
 		CompanyDB:"SBODemoUS", 
@@ -125,6 +125,43 @@ The response is something like:
 }
 ```
 
+- http://MIKISURFACE/t11sqlbroker/Api/BO/Activity/1 to get/put/delete
+```json
+POST http://MIKISURFACE/t11sqlbroker/Api/BO/Activity
+{ 
+	connection: { 
+		CompanyDB:"SBODemoUS", 
+		Server:"MIKISURFACE", 
+		LicenseServer:"MIKISURFACE:30000", 
+		SLDServer:"MIKISURFACE:40000", 
+		DbUserName:"sa", 
+		DbPassword:"B1Admin", 
+		UseTrusted:false, 
+		UserName:"manager", 
+		Password:"B1Admin", 
+		DbServerType:"MSSQL2016" 
+	}, 
+	bo: {
+		Activity: {
+		    CardCode: "C20000",
+		    Notes: "MMMMMM",
+		    StartDate: "2020-07-25",
+		    Details: "MEETING NOW",
+		    Activity: "cn_Conversation",
+		    ActivityType: "-1",
+		    StartTime: "02:44:00",
+		    EndTime: "02:59:00",
+		}
+	    },
+	timeOut:10, 
+	rawXml:false, 
+	xmlSchema: false,
+}
+
+```
+
+
+- http://MIKISURFACE/t11sqlbroker/Api/BO/Activity/1
 - http://MIKISURFACE/t11sqlbroker/Api/BO/Activity/1
 - http://MIKISURFACE/t11sqlbroker/Api/BO/InventoryGenEntry/1
 - http://MIKISURFACE/t11sqlbroker/Api/BO/InventoryGenExit/11
