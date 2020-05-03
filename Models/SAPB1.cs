@@ -203,7 +203,8 @@ namespace t11sqlbroker.Models {
 				return result;
 			}
 		}
-		static string crudBO(DIConnection.IConnRef t, string name, ref string id, string bstrXML, bool delete, bool put, bool post, bool schemaRequired, ref string xmlSchema, ref bool found) {
+		static string crudBO(DIConnection.IConnRef t, string name, ref string id, string bstrXML, 
+			bool delete, bool put, bool post, bool schemaRequired, ref string xmlSchema, ref bool found) {
 			if (post) { //Add new activity
 				if (string.IsNullOrEmpty(bstrXML)) throw new Exception($"No XML was defined for a POST {name} request");
 				if (!string.IsNullOrEmpty(id)) throw new Exception($"ID {id} was defined for a POST {name} request. How come?");
@@ -218,73 +219,14 @@ namespace t11sqlbroker.Models {
 				case "ProductionOrders": {
 					return gcrudBO<SAPbobsCOM.ProductionOrders>(SAPbobsCOM.BoObjectTypes.oProductionOrders,
 						t, name, ref id, bstrXML, delete, put, post, schemaRequired, ref xmlSchema, ref found);
-					/*
-					SAPbobsCOM.ProductionOrders bo = t.company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oProductionOrders);
-					if (schemaRequired) xmlSchema = t.company.GetBusinessObjectXmlSchema(SAPbobsCOM.BoObjectTypes.oProductionOrders);
-					if (!string.IsNullOrEmpty(id)) { // Find BO by ID
-						found = bo.GetByKey(int.Parse(id));
-					}
-					if (post) { //Add new BO // Company must be set to XMLasString = true, otherwise this will not work
-						bo.Browser.ReadXml(bstrXML, 0);
-						int status = bo.Add();
-						if (status != 0) {
-							int errorCode = t.company.GetLastErrorCode();
-							string errorText = t.company.GetLastErrorDescription();
-							throw new Exception($"Add status is {status} error code {errorCode} {errorText}");
-						} else {
-							//Unfortunately, after addition the bo is not reloaded, to find the newly created value is as follows
-							string boKey = t.company.GetNewObjectKey();
-							string boType = t.company.GetNewObjectType();
-							//This checking is fine, but what can we do, if it is not 202?
-							//if (boType == "202") throw new Exception("The returned object type is not 202 for a Production Order");
-							found = bo.GetByKey(int.Parse(boKey));
-							id = boKey; //With this scenario we know the key.
-						}
-					} else if (delete) {
-						if (found) {
-							int status = bo.Cancel(); //No Delete operation defined for Production Order
-							if (status != 0) {
-								int errorCode = t.company.GetLastErrorCode();
-								string errorText = t.company.GetLastErrorDescription();
-								throw new Exception($"Cancel status is {status} error code {errorCode} {errorText}");
-							} else bo = null;
-						}
-					} else if (put) {
-						if (found) {
-							bo.Browser.ReadXml(bstrXML, 0);
-							int status = bo.Update();
-							if (status != 0) {
-								int errorCode = t.company.GetLastErrorCode();
-								string errorText = t.company.GetLastErrorDescription();
-								throw new Exception($"Update status is {status} error code {errorCode} {errorText}");
-							} else {
-								//It's be better to reload the data, since the update in a header may have had rippling effects
-								found = bo.GetByKey(int.Parse(id));
-							}
-						}
-					}
-					return found ? bo?.GetAsXML() : null;
-					*/
 				}
 				case "InventoryGenExit": {
 					return gcrudBO<SAPbobsCOM.Documents>(SAPbobsCOM.BoObjectTypes.oInventoryGenExit,
 						t, name, ref id, bstrXML, delete, put, post, schemaRequired, ref xmlSchema, ref found);
-					/*
-					SAPbobsCOM.Documents bo = t.company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oInventoryGenExit);
-					if (schemaRequired) xmlSchema = t.company.GetBusinessObjectXmlSchema(SAPbobsCOM.BoObjectTypes.oInventoryGenExit);
-					found = bo.GetByKey(int.Parse(id));
-					return found ? bo.GetAsXML() : null;
-					*/
 				}
 				case "InventoryGenEntry": {
 					return gcrudBO<SAPbobsCOM.Documents>(SAPbobsCOM.BoObjectTypes.oInventoryGenEntry,
 						t, name, ref id, bstrXML, delete, put, post, schemaRequired, ref xmlSchema, ref found);
-					/*
-					SAPbobsCOM.Documents bo = t.company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oInventoryGenEntry);
-					if (schemaRequired) xmlSchema = t.company.GetBusinessObjectXmlSchema(SAPbobsCOM.BoObjectTypes.oInventoryGenEntry);
-					found = bo.GetByKey(int.Parse(id));
-					return found ? bo.GetAsXML() : null;
-					*/
 				}
 				case "Activity": {
 					SAPbobsCOM.ActivitiesService actSrv = t.company.GetCompanyService().GetBusinessService(SAPbobsCOM.ServiceTypes.ActivitiesService);
@@ -378,5 +320,6 @@ namespace t11sqlbroker.Models {
 			}
 			return (found && !deleted) ? ((dynamic)bo)?.GetAsXML() : null;
 		}
+
 	}
 }

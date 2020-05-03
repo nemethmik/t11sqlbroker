@@ -277,6 +277,74 @@ POST http://MIKISURFACE/t11sqlbroker/Api/BO/Activity
 	rawXml:false, 
 }
 ```
+- PUT http://MIKISURFACE/t11sqlbroker/Api/BO/InventoryGenEntryUpdateCommentAndJournalMemo/140 where you can pass 
+values for all the three parameters, or leave out the ones you don't want to update.
+```JSON
+{ 
+	comment:"InventoryGenEntryUpdateCommentAndJournalMemo",
+	bo: {
+		data:{ Comments: "XXXXXX", JrnlMemo:"FRom SQL Broker", Ref2:"CX5678/67" }
+	},
+	timeOut:10, 
+	rawXml:false, 
+}
+
+```
+- PUT http://MIKISURFACE/t11sqlbroker/Api/BO/InventoryGenEntry/140 Worked great with the XML version. So no, need for the extra functions.
+I'll keep them, though since I was experimenting with them for about an hour.
+```JSON
+{ 
+	comment:"InventoryGenEntryUpdateCommentAndJournalMemo",
+	boXml: "
+		<BOM>
+		  <BO>
+			<AdmInfo>
+			  <Object>59</Object>
+			</AdmInfo>
+			<OIGN>
+			  <row>
+				<DocEntry>140</DocEntry>
+				<DocNum>140</DocNum>
+				<Ref2>YYYYYYYYYYYYYYYYYYYY</Ref2>
+				<Comments>YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY</Comments>
+				<JrnlMemo>YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY</JrnlMemo>
+			  </row>
+			</OIGN>
+		  </BO>
+		</BOM>",
+	timeOut:10, 
+	rawXml:true, 
+}
+```
+Possibly I messed up something in my initial experimenting, but this update works great, too, no need to revert to XML:
+```JSON
+{ 
+	comment:"InventoryGenEntryUpdateCommentAndJournalMemo",
+	bo: {
+		"BOM": {
+            "BO": {
+                "AdmInfo": {
+                    "Object": "59"
+                },
+                "OIGN": {
+                    "row": {
+                        "DocEntry": "140",
+                        "DocNum": "140",
+                        "Ref2": "ZZZZZZZ",
+                        "Comments": "ZZZZZZZZZZZZZZZ",
+                        "JrnlMemo": "ZZZZZZZZZZZZZZZZ",
+                    }
+                },
+            }
+        }
+    },
+	timeOut:10, 
+	rawXml:true, 
+}
+```
+
+
+
 
 ## Security Configurations for SQL Broker
 Here are the steps to make a DB login/user for SQL Broker:
