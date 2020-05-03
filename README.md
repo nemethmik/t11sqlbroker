@@ -124,6 +124,40 @@ The response is something like:
     RtCalcProp><Status>P</Status><ItemName>Labor Hours Production</ItemName></row></WOR1></BO></BOM>"
 }
 ```
+- POST http://MIKISURFACE/t11sqlbroker/Api/BO/ProductionOrders
+```json
+{ 
+	comment:"POST This is a Production Order creation",
+	connection: { 
+		Profile:"MikiTest",
+	}, 
+	bo: {
+		"BOM": {
+		  "BO": {
+		      "AdmInfo": {
+		          "Object": "202"
+		      },
+		      "OWOR": {
+		          "row": {
+		              "Series": "23",
+		              "ItemCode": "P20003",
+		              "Type": "S",
+		              "PlannedQty": "23.000000",
+		              "DueDate": "20200916",
+		              "Warehouse": "01",
+		              "StartDate": "20200810",
+		              "Priority": "100"
+		          }
+		      },
+		  }
+		}
+	},
+	timeOut:10, 
+	rawXml:false, 
+}
+```
+
+
 
 - http://MIKISURFACE/t11sqlbroker/Api/BO/Activity/1 to get/put/delete
 ```json
@@ -160,10 +194,116 @@ POST http://MIKISURFACE/t11sqlbroker/Api/BO/Activity
 
 ```
 
-
-- http://MIKISURFACE/t11sqlbroker/Api/BO/Activity/1
-- http://MIKISURFACE/t11sqlbroker/Api/BO/Activity/1
 - http://MIKISURFACE/t11sqlbroker/Api/BO/InventoryGenEntry/1
+```json
+{
+  comment:"This is Receive from Production example", 
+  connection: { 
+    Profile:"MikiTest",
+  }, 
+  "bo": {
+  "BOM": {
+      "BO": {
+          "AdmInfo": {
+              "Object": "59"
+          },
+          "OIGN": {
+              "row": {
+                  "Comments": "ZZZZZZZZZZZZ",
+                  "JrnlMemo": "Receipt from Production from SQL Broker",
+              }
+          },
+          "IGN1": {
+              "row": {
+                  "BaseRef": "162",
+                  "BaseType": "202",
+                  "BaseEntry": "162",
+                  "Quantity": "1.000000",
+                  "WhsCode": "01"
+              }
+          }
+      }
+  }
+  },
+  timeOut:10, 
+  rawXml:false, 
+}
+```
+
 - http://MIKISURFACE/t11sqlbroker/Api/BO/InventoryGenExit/11
+```json
+{ 
+	comment:"POST to create an Issue for Production Document",
+	connection: { 
+		Profile:"MikiTest",
+	}, 
+	  "bo": {
+      "BOM": {
+          "BO": {
+              "AdmInfo": {
+                  "Object": "60"
+              },
+              "OIGE": {
+                  "row": {
+                      "Ref1": "2",
+                      "Comments": "YYYYYYYYYYYYYYYYY",
+                      "JrnlMemo": "Issue for Production"
+                  }
+              },
+              "IGE1": {
+                  "row": [
+                      {
+                          "BaseRef": "162",
+                          "BaseType": "202",
+                          "BaseEntry": "162",
+                          "BaseLine": "0",
+                          "Quantity": "1.000000",
+                          "WhsCode": "01"
+                      },
+                      {
+                          "BaseRef": "162",
+                          "BaseType": "202",
+                          "BaseEntry": "162",
+                          "BaseLine": "3",
+                          "Quantity": "1.000000",
+                          "WhsCode": "01"
+                      }
+                  ]
+              }
+          }
+      }
+  },
+	timeOut:10, 
+	rawXml:false, 
+}
+```
 
+## Security Configurations for SQL Broker
+Here are the steps to make a DB login/user for SQL Broker:
+- Create a Login account (SQLBroker, for example) on the Serer's Security/Login folder, just leave it only with public server role
+- Create a user on the company database's Security/Users folder, and create a user (SQLBroker, for example) and assign it to the login account SQLBroker
+- Create new role db_executor (or whatever) on the Database Roles folder.
+	- Open a query window and enter **GRANT EXECUTE to db_executor**
+	- Open the Properties window for the Database User SQLBroker and on the membership panel select all these three
+		- db_datareader
+		- db_datawriter
+		- db_executor (this is what we have just created)
+- Create a user on SBO-COMMON database Security/Users folder, and create a user (SQLBroker, for example) and assign it to the login account SQLBroker
+	- Open the Properties window for the Database User SQLBroker in SBO-COMMON and on the membership panel select only the
+		- db_datareader
+Now, this SQLBroker, or whatever name you used, can be used as a DB user for SAP B1, no need to use SA any more.
 
+### Execution Permissions
+When you receive the error message:
+"[Microsoft][ODBC Driver 13 for SQL Server][SQL Server]The EXECUTE permission was denied on the object 'SBO_SP_TransactionNotification', database 'SBODemoUS', schema 'dbo'. (CINF)",
+This means that the DB user has no execution authorization on the Company DB.
+How to enable it without giving full **db_owner** SQL Server membership to the DB user defined for the connection profile?
+```SQL
+-- Open console for the database
+CREATE ROLE db_executor --This can be done with the Studio UI
+GRANT EXECUTE to db_executor -- This can only be done on the console/script window
+ALTER ROLE db_executor ADD MEMBER SQLBroker -- This can be done with Studio UI, too.
+-- These are to query some useful information
+EXEC sp_helprotect @name='EXECUTE' -- Returns db_executor
+SELECT is_rolemember('db_executor','SQLBroker')
+```
