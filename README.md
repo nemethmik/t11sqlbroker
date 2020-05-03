@@ -157,8 +157,6 @@ The response is something like:
 }
 ```
 
-
-
 - http://MIKISURFACE/t11sqlbroker/Api/BO/Activity/1 to get/put/delete
 ```json
 POST http://MIKISURFACE/t11sqlbroker/Api/BO/Activity
@@ -194,7 +192,7 @@ POST http://MIKISURFACE/t11sqlbroker/Api/BO/Activity
 
 ```
 
-- http://MIKISURFACE/t11sqlbroker/Api/BO/InventoryGenEntry/1
+- POST http://MIKISURFACE/t11sqlbroker/Api/BO/InventoryGenEntry to create a receipt from production document.
 ```json
 {
   comment:"This is Receive from Production example", 
@@ -230,7 +228,7 @@ POST http://MIKISURFACE/t11sqlbroker/Api/BO/Activity
 }
 ```
 
-- http://MIKISURFACE/t11sqlbroker/Api/BO/InventoryGenExit/11
+- POST http://MIKISURFACE/t11sqlbroker/Api/BO/InventoryGenExit to create Issue for Production document.
 ```json
 { 
 	comment:"POST to create an Issue for Production Document",
@@ -277,21 +275,9 @@ POST http://MIKISURFACE/t11sqlbroker/Api/BO/Activity
 	rawXml:false, 
 }
 ```
-- PUT http://MIKISURFACE/t11sqlbroker/Api/BO/InventoryGenEntryUpdateCommentAndJournalMemo/140 where you can pass 
-values for all the three parameters, or leave out the ones you don't want to update.
-```JSON
-{ 
-	comment:"InventoryGenEntryUpdateCommentAndJournalMemo",
-	bo: {
-		data:{ Comments: "XXXXXX", JrnlMemo:"FRom SQL Broker", Ref2:"CX5678/67" }
-	},
-	timeOut:10, 
-	rawXml:false, 
-}
 
-```
-- PUT http://MIKISURFACE/t11sqlbroker/Api/BO/InventoryGenEntry/140 Worked great with the XML version. So no, need for the extra functions.
-I'll keep them, though since I was experimenting with them for about an hour.
+- PUT http://MIKISURFACE/t11sqlbroker/Api/BO/InventoryGenEntry/140 Here is an example how to use XML to update the 
+Comments, JrnlMemo and Ref2 fields, the only modifiable fields in inventory documents.
 ```JSON
 { 
 	comment:"InventoryGenEntryUpdateCommentAndJournalMemo",
@@ -316,7 +302,7 @@ I'll keep them, though since I was experimenting with them for about an hour.
 	rawXml:true, 
 }
 ```
-Possibly I messed up something in my initial experimenting, but this update works great, too, no need to revert to XML:
+Here is the JSONversion of updating the Comments, JrnlMemo and Ref2 in Inventory documents, no need for going for XML
 ```JSON
 { 
 	comment:"InventoryGenEntryUpdateCommentAndJournalMemo",
@@ -342,8 +328,6 @@ Possibly I messed up something in my initial experimenting, but this update work
 	rawXml:true, 
 }
 ```
-
-
 
 
 ## Security Configurations for SQL Broker
