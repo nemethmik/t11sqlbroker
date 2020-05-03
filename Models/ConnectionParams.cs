@@ -53,19 +53,29 @@ namespace t11sqlbroker.Models {
 		/// The server type: HANA, MSSQL2016
 		/// </summary>
 		public string DbServerType;
-		static ConnectionParams MIKISURFACE = new ConnectionParams {
-			Profile = "MIKISURFACE",
-			CompanyDB = "SBODemoUS",
-			Server = "MIKISURFACE",
-			LicenseServer = "MIKISURFACE:30000",
-			SLDServer = "MIKISURFACE:40000",
-			DbUserName = "sa",
-			DbPassword = "B1Admin",
-			UseTrusted = false,
-			UserName = "manager",
-			Password = "B1Admin",
-			DbServerType = "MSSQL2016"
-		};
+		/// <summary>
+		/// An optional separate user can be configured for ADO.NET SQL operations.
+		/// If not defined the DB user is used for ADO.NET connections, too
+		/// </summary>
+		public string AdoNetUser;
+		/// <summary>
+		/// The password for the ADO.NET user
+		/// </summary>
+		public string AdoNetPassword;
+		//THis block is not needed any more
+		//static ConnectionParams MIKISURFACE = new ConnectionParams {
+		//	Profile = "MIKISURFACE",
+		//	CompanyDB = "SBODemoUS",
+		//	Server = "MIKISURFACE",
+		//	LicenseServer = "MIKISURFACE:30000",
+		//	SLDServer = "MIKISURFACE:40000",
+		//	DbUserName = "sa",
+		//	DbPassword = "B1Admin",
+		//	UseTrusted = false,
+		//	UserName = "manager",
+		//	Password = "B1Admin",
+		//	DbServerType = "MSSQL2016"
+		//};
 		/// <summary>
 		/// Returns connection parameter values from Web.config
 		/// <configuration>	
@@ -86,17 +96,23 @@ namespace t11sqlbroker.Models {
 			if (conf != null) {
 				var cp = new ConnectionParams {
 					Profile = profile,
-					CompanyDB = conf["CompanyDB"].ToString(),
-					Server = conf["Server"].ToString(),
-					LicenseServer = conf["LicenseServer"].ToString(),
-					SLDServer = conf["SLDServer"].ToString(),
-					DbUserName = conf["DbUserName"].ToString(),
-					DbPassword = conf["DbPassword"].ToString(),
-					UseTrusted = false,
-					UserName = conf["UserName"].ToString(),
-					Password = conf["Password"].ToString(),
-					DbServerType = conf["DbServerType"].ToString(),
+					CompanyDB = conf["CompanyDB"]?.ToString(),
+					Server = conf["Server"]?.ToString(),
+					LicenseServer = conf["LicenseServer"]?.ToString(),
+					SLDServer = conf["SLDServer"]?.ToString(),
+					DbUserName = conf["DbUserName"]?.ToString(),
+					DbPassword = conf["DbPassword"]?.ToString(),
+					UserName = conf["UserName"]?.ToString(),
+					Password = conf["Password"]?.ToString(),
+					DbServerType = conf["DbServerType"]?.ToString(),
+					AdoNetUser = conf["AdoNetUser"]?.ToString(),
+					AdoNetPassword = conf["AdoNetPassword"]?.ToString(),
 				};
+				if (string.IsNullOrEmpty(cp.AdoNetUser)) { //If no dedicated separate user defined for ADO.NET, just use the default db user
+					cp.AdoNetUser = cp.DbUserName;
+					cp.AdoNetPassword = cp.DbPassword;
+				}
+				cp.UseTrusted = string.IsNullOrEmpty(cp.AdoNetUser);//If no user defined trusted connection via Windows Authentication is used
 				return cp;
 			} else {
 				throw new Exception("No conf was found for " + profile);
@@ -115,6 +131,9 @@ namespace t11sqlbroker.Models {
 			else if (this.DbServerType.Equals("MSSQL2008")) st = SAPbobsCOM.BoDataServerTypes.dst_MSSQL2008;
 			else if (this.DbServerType.Equals("MSSQL2005")) st = SAPbobsCOM.BoDataServerTypes.dst_MSSQL2005;
 			return st;
+		}
+		public string getConnectionString() {
+			return $"Server={Server};Database={CompanyDB};User Id={AdoNetUser};Password={AdoNetPassword};MultipleActiveResultSets=true";
 		}
 	}
 }

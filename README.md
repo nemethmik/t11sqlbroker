@@ -300,10 +300,20 @@ This means that the DB user has no execution authorization on the Company DB.
 How to enable it without giving full **db_owner** SQL Server membership to the DB user defined for the connection profile?
 ```SQL
 -- Open console for the database
-CREATE ROLE db_executor --This can be done with the Studio UI
+CREATE ROLE db_executor --This can be done with the Studio UI, too
 GRANT EXECUTE to db_executor -- This can only be done on the console/script window
 ALTER ROLE db_executor ADD MEMBER SQLBroker -- This can be done with Studio UI, too.
 -- These are to query some useful information
 EXEC sp_helprotect @name='EXECUTE' -- Returns db_executor
 SELECT is_rolemember('db_executor','SQLBroker')
 ```
+
+### Login Issues
+When you receive a message this usually means that the password or the user of the DbUserName/DbPassord parameters are not ok.
+```json
+{
+    "statusCode": 400,
+    "errorText": "Connection was rejected msg Unable to access SBO-Common database code -111",
+}
+```
+Check the web.config settings and make sure your passwords are ok.

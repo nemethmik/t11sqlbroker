@@ -11,6 +11,7 @@ namespace t11sqlbroker.Models {
 		public bool sql = true;
 		public bool bo = true;
 		public bool uq = true;
+		public bool adonet = true;
 		public string defaultProfile;
 		public int maxConnections = 3;
 		public ConnectionParams defaultConnection;

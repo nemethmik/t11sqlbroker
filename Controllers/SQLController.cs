@@ -16,7 +16,7 @@ namespace t11sqlbroker.Controllers {
 		public HttpResponseMessage Get([FromBody]SQLQuery value) {
 			try {
 				checkSQLReqParameter(value);
-				var result = SAPB1.SQLQuery(value);
+				var result = SAPB1.SQLQuery(value,true);
 				return Request.CreateResponse<SQLResult>(result.statusCode, result);
 			} catch (Exception e) {
 				var result = new SQLResult {statusCode = HttpStatusCode.BadRequest, errorCode = e.HResult, errorText = e.Message, errorStackTrace = e.StackTrace };
@@ -37,6 +37,10 @@ namespace t11sqlbroker.Controllers {
 			} else if (command.Equals("GetConfig")) {
 				try {
 					var cp = ConnectionParams.GetConnectionProfile(profile);//"SQLBrokerDefault"
+					//Passwords are removed for security resons.
+					cp.AdoNetPassword = "********";
+					cp.Password = "********";
+					cp.DbPassword = "********";
 					return Request.CreateResponse<ConnectionParams>(HttpStatusCode.OK,cp);
 				} catch (Exception e) {
 					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, e.Message + " : " + e.StackTrace);
@@ -51,7 +55,7 @@ namespace t11sqlbroker.Controllers {
 		public HttpResponseMessage Post([FromBody]SQLQuery value) {
 			try {
 				checkSQLReqParameter(value);
-				var result = SAPB1.SQLQuery(value);
+				var result = SAPB1.SQLQuery(value,false);
 				return Request.CreateResponse<SQLResult>(result.statusCode, result);
 			} catch (Exception e) {
 				var result = new SQLResult {statusCode = HttpStatusCode.BadRequest, errorCode = -1, errorText = e.Message, errorStackTrace = e.StackTrace };
