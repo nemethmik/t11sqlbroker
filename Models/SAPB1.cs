@@ -87,7 +87,7 @@ namespace t11sqlbroker.Models {
 						while (rs.Read()) {
 							var row = new Newtonsoft.Json.Linq.JObject();
 							for (int i = 0; i < rs.FieldCount; i++) {
-								row.Add(rs.GetName(i), rs.GetString(i));
+								row.Add(rs.GetName(i), rs.GetValue(i).ToString());
 							}
 							data.Add(row);
 						}

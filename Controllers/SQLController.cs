@@ -10,6 +10,7 @@ namespace t11sqlbroker.Controllers {
 	public class SQLController : ApiController {
 		void checkSQLReqParameter(SQLQuery value) {
 			if (value == null) throw new Exception("The body is missing or not formatted correctly. Maybe just a comma is missing between two attributes.");
+			if (string.IsNullOrEmpty(value.SQL)) throw new Exception("SQL property is empty. Maybe your JSON is badly formatted. Use JSON.stringify");
 		}
 		// GET: api/SQL
 		[Route("api/SQL")]
