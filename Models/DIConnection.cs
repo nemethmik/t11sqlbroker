@@ -74,8 +74,8 @@ namespace t11sqlbroker.Models {
 		/// <returns></returns>
 		public void Connect(ConnectionParams connectionParams) {
 			this.connectionParams = connectionParams;
-			if (this._company == null) {
-				this._company = new SAPbobsCOM.Company();
+			if (this._company == null) this._company = new SAPbobsCOM.Company();
+			if (!this._company.Connected) { 
 				_company.CompanyDB = connectionParams.CompanyDB;
 				_company.Server = connectionParams.Server;
 				_company.LicenseServer = connectionParams.LicenseServer;
@@ -98,8 +98,8 @@ namespace t11sqlbroker.Models {
 			}
 		}
 		void Disconnect() {
-			if (_company != null && _company.Connected) {
-				_company.Disconnect();
+			if (_company != null) {
+				if(_company.Connected) _company.Disconnect();
 				_company = null;
 				System.Diagnostics.Debug.WriteLine("SAP DI is disconnected");
 			}
