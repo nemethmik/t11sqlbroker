@@ -11,55 +11,64 @@ namespace t11sqlbroker.Controllers {
 		void checkBoReqParameter(BORequest boReq) {
 			if (boReq == null) throw new Exception("The body is missing or not formatted correctly. Maybe just a comma is missing between two attributes.");
 		}
+		BOResult handleException(Exception e) {
+			var r = (e is SQLBrokerError && (e as SQLBrokerError).boResult != null) ? (e as SQLBrokerError).boResult : new BOResult(Request);
+			return r.setResponseStatus(HttpStatusCode.BadRequest, e);
+		}
+		void applyProfileFromURI(BORequest boReq, string profile, bool rawXml = false, bool xmlSchema = false) {
+			if (!string.IsNullOrEmpty(profile)) {
+				if (boReq.connection == null) boReq.connection = new ConnectionParams { Profile = profile };
+				else if (string.IsNullOrEmpty(boReq.connection.Profile)) boReq.connection.Profile = profile;
+			}
+			if (rawXml) boReq.rawXml = rawXml;
+			if (xmlSchema) boReq.xmlSchema = xmlSchema;
+		}
 		// GET: api/BO/name
-		[Route("api/BO/{name}/{id}")]
-		public HttpResponseMessage Get([FromBody]BORequest boReq, string name, string id) {
+		[Route("api/BO/{name}/{id}/{profile?}/{rawXml?}/{xmlSchema?}")]
+		public BOResult Get(/*[FromBody]BORequest boReq,*/ string name, string id, string profile = null, bool rawXml = false, bool xmlSchema = false) {
 			try {
+				BORequest boReq = new BORequest { connection = new ConnectionParams { Profile = profile } };
+				applyProfileFromURI(boReq, profile, rawXml, xmlSchema);
 				checkBoReqParameter(boReq);
-				var result = SAPB1.BORequest(q:boReq,name:name,id:id);
-				return Request.CreateResponse<BOResult>(result.statusCode, result);
+				return SAPB1.BORequest(q:boReq,name:name,id:id,result:new BOResult(Request));
 			} catch (Exception e) {
-				var result = new BOResult { statusCode = HttpStatusCode.BadRequest, errorCode = -1, errorText = e.Message, errorStackTrace = e.StackTrace };
-				return Request.CreateResponse<BOResult>(result.statusCode, result);
+				return handleException(e);
 			}
 		}
 
 		// POST: api/BO/ProductionOrder - to create a BO
 		[Route("api/BO/{name}")]
-		public HttpResponseMessage Post([FromBody]BORequest boReq, string name) {
+		public BOResult Post([FromBody]BORequest boReq, string name) {
 			try {
 				checkBoReqParameter(boReq);
-				var result = SAPB1.BORequest(q:boReq, name:name, id:null, post:true);
-				return Request.CreateResponse<BOResult>(result.statusCode, result);
+				return SAPB1.BORequest(q:boReq, name:name, id:null, post:true, result:new BOResult(Request));
 			} catch (Exception e) {
-				var result = new BOResult { statusCode = HttpStatusCode.BadRequest, errorCode = -1, errorText = e.Message, errorStackTrace = e.StackTrace };
-				return Request.CreateResponse<BOResult>(result.statusCode, result);
+				return handleException(e);
 			}
 		}
 
 		// PUT: api/BO/ProductionOrder/6756 - to update
-		[Route("api/BO/{name}/{id}")]
-		public HttpResponseMessage Put([FromBody]BORequest boReq, string name, string id) {
+		[Route("api/BO/{name}/{id}/{profile?}")]
+		public BOResult Put([FromBody]BORequest boReq, string name, string id, string profile = null) {
 			try {
 				checkBoReqParameter(boReq);
-				var result = SAPB1.BORequest(q: boReq, name: name, id: id, put: true);
-				return Request.CreateResponse<BOResult>(result.statusCode, result);
+				applyProfileFromURI(boReq, profile);
+				return SAPB1.BORequest(q: boReq, name: name, id: id, put: true, result:new BOResult(Request));
 			} catch (Exception e) {
-				var result = new BOResult { statusCode = HttpStatusCode.BadRequest, errorCode = -1, errorText = e.Message, errorStackTrace = e.StackTrace };
-				return Request.CreateResponse<BOResult>(result.statusCode, result);
+				return handleException(e);
 			}
 		}
 
 		// DELETE: api/BO/Activity/5
-		[Route("api/BO/{name}/{id}")]
-		public HttpResponseMessage Delete([FromBody]BORequest boReq, string name, string id) {
+		[Route("api/BO/{name}/{id}/{profile?}")]
+		public BOResult Delete(/*BORequest boReq,*/ string name, string id, string profile = null) {
 			try {
-				checkBoReqParameter(boReq);
-				BOResult result = SAPB1.BORequest(q: boReq, name: name, id: id, delete: true);
-				return Request.CreateResponse<BOResult>(result.statusCode, result);
+				//checkBoReqParameter(boReq);
+				BORequest boReq = new BORequest { connection = new ConnectionParams { Profile = profile } };
+				applyProfileFromURI(boReq, profile);
+				return SAPB1.BORequest(q: boReq, name: name, id: id, delete: true, result:new BOResult(Request));
 			} catch (Exception e) {
-				var result = new BOResult { statusCode = HttpStatusCode.BadRequest, errorCode = -1, errorText = e.Message, errorStackTrace = e.StackTrace };
-				return Request.CreateResponse<BOResult>(result.statusCode, result);					
+				return handleException(e);
 			}
 		}
 	}

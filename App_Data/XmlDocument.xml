@@ -511,6 +511,42 @@
             For more info check out SAP B1 DI API documentation
             </summary>
         </member>
+        <member name="F:t11sqlbroker.Models.NoPwdConnectionParams.Profile">
+            <summary>
+            When a profile is defined the rest of the parameters are ignored.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.NoPwdConnectionParams.CompanyDB">
+            <summary>
+            The SAP B1 company database name
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.NoPwdConnectionParams.Server">
+            <summary>
+            The database server
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.NoPwdConnectionParams.DbUserName">
+            <summary>
+            The database user
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.NoPwdConnectionParams.UserName">
+            <summary>
+            The SAP B1 user name, manager, for example
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.NoPwdConnectionParams.DbServerType">
+            <summary>
+            The server type: HANA, MSSQL2016
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.NoPwdConnectionParams.AdoNetUser">
+            <summary>
+            An optional separate user can be configured for ADO.NET SQL operations.
+            If not defined the DB user is used for ADO.NET connections, too
+            </summary>
+        </member>
         <member name="T:t11sqlbroker.Models.ConnectionParams">
             <summary>
             The connection details to reference a profile or define all the parameters to build a connection to a SAP B1 system.
@@ -627,18 +663,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:t11sqlbroker.Models.SAPB1.BORequest(t11sqlbroker.Models.BORequest,System.String,System.String,System.Boolean,System.Boolean,System.Boolean)">
-            <summary>
-            The generic business logic behind SAP DI BO requests: GET, POST/Add, PUT/Update, DELETE/Delete
-            </summary>
-            <param name="q"></param>
-            <param name="name"></param>
-            <param name="id"></param>
-            <param name="delete"></param>
-            <param name="put"></param>
-            <param name="post"></param>
-            <returns></returns>
-        </member>
         <member name="T:t11sqlbroker.Models.BORequest">
             <summary>
             The BO request data for GET, POST, PUT and DELETE requests.
@@ -720,6 +744,26 @@
             <summary>
             When, true column info is added along with the rows.
             This adds 3 - 5 seconds extra to the total execution time.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLQuery.parameters">
+            <summary>
+            Parameter array for user queries
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLQuery.userQuery">
+            <summary>
+            Name of the user quer
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLQuery.uqCategory">
+            <summary>
+            The category name of the user query
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLQuery.lang">
+            <summary>
+            The language of customized messages
             </summary>
         </member>
         <member name="T:t11sqlbroker.Models.BOResult">
@@ -884,6 +928,34 @@
             The effective connection details: Profile, CompanyDB, Server, DBUser, UserName.
             No passwords and no other details are returned.
             </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.SQL">
+            <summary>
+            The SQL string executed for user queries
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.userQuery">
+            <summary>
+            The actually executed user query prefixed with its category name
+            JobWatch.X.GetOpenJobs, for example refers to that this was an extension function.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.SQLResult.extendedUQ">
+            <summary>
+            If an customised/extended version was found for the requested UQ, this is set to true
+            </summary>
+        </member>
+        <member name="M:t11sqlbroker.Models.SQLResult.#ctor(System.Net.Http.HttpRequestMessage)">
+            <summary>
+            SQLResult must be initialized with HttpRequestMessage since it implements IHttpActionResult
+            </summary>
+            <param name="rm"></param>
+        </member>
+        <member name="M:t11sqlbroker.Models.SQLResult.setResponseStatus(System.Net.HttpStatusCode,System.Exception)">
+            <summary>
+            Call this function upon exception before returning HTTP response.
+            </summary>
+            <param name="e"></param>
         </member>
     </members>
 </doc>

@@ -34,5 +34,21 @@ namespace t11sqlbroker.Models {
 		/// This adds 3 - 5 seconds extra to the total execution time.
 		/// </summary>
 		public bool columnInfo;
+		/// <summary>
+		/// Parameter array for user queries
+		/// </summary>
+		public string[] parameters;
+		/// <summary>
+		/// Name of the user quer
+		/// </summary>
+		public string userQuery;
+		/// <summary>
+		/// The category name of the user query
+		/// </summary>
+		public string uqCategory;
+		/// <summary>
+		/// The language of customized messages
+		/// </summary>
+		public string lang;
 	}
 }

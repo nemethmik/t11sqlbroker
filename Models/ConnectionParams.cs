@@ -4,6 +4,49 @@ using System.Linq;
 using System.Web;
 
 namespace t11sqlbroker.Models {
+	public class NoPwdConnectionParams {
+		/// <summary>
+		/// When a profile is defined the rest of the parameters are ignored.
+		/// </summary>
+		public string Profile;
+		/// <summary>
+		/// The SAP B1 company database name
+		/// </summary>
+		public string CompanyDB;
+		/// <summary>
+		/// The database server
+		/// </summary>
+		public string Server;
+		/// <summary>
+		/// The database user
+		/// </summary>
+		public string DbUserName;
+		/// <summary>
+		/// The SAP B1 user name, manager, for example
+		/// </summary>
+		public string UserName;
+		/// <summary>
+		/// The server type: HANA, MSSQL2016
+		/// </summary>
+		public string DbServerType;
+		/// <summary>
+		/// An optional separate user can be configured for ADO.NET SQL operations.
+		/// If not defined the DB user is used for ADO.NET connections, too
+		/// </summary>
+		public string AdoNetUser;
+		public NoPwdConnectionParams() { }
+		public NoPwdConnectionParams(ConnectionParams connection) {
+			if (connection != null) {
+				Profile = connection.Profile;
+				CompanyDB = connection.CompanyDB;
+				Server = connection.Server;
+				DbUserName = connection.DbUserName;
+				UserName = connection.UserName;
+				DbServerType = connection.DbServerType;
+				AdoNetUser = connection.AdoNetUser;
+			}
+		}
+	}
 	/// <summary>
 	/// The connection details to reference a profile or define all the parameters to build a connection to a SAP B1 system.
 	/// The server parameters may prevent the client to define a connection.
@@ -62,20 +105,6 @@ namespace t11sqlbroker.Models {
 		/// The password for the ADO.NET user
 		/// </summary>
 		public string AdoNetPassword;
-		//THis block is not needed any more
-		//static ConnectionParams MIKISURFACE = new ConnectionParams {
-		//	Profile = "MIKISURFACE",
-		//	CompanyDB = "SBODemoUS",
-		//	Server = "MIKISURFACE",
-		//	LicenseServer = "MIKISURFACE:30000",
-		//	SLDServer = "MIKISURFACE:40000",
-		//	DbUserName = "sa",
-		//	DbPassword = "B1Admin",
-		//	UseTrusted = false,
-		//	UserName = "manager",
-		//	Password = "B1Admin",
-		//	DbServerType = "MSSQL2016"
-		//};
 		/// <summary>
 		/// Returns connection parameter values from Web.config
 		/// <configuration>	

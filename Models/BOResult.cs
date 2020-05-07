@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
+using System.Web.Http;
 
 namespace t11sqlbroker.Models {
 	/// <summary>
 	/// The result object for the HTTP response for BO Requests
 	/// </summary>
-	public class BOResult {
+	public class BOResult : IHttpActionResult {
 		/// <summary>
 		/// The HTTP status code.
 		/// </summary>
@@ -54,6 +59,21 @@ namespace t11sqlbroker.Models {
 		/// The effective connection details: Profile, CompanyDB, Server, DBUser, UserName.
 		/// No passwords and no other details are returned.
 		/// </summary>
-		public ConnectionParams connection = new ConnectionParams();
+		public NoPwdConnectionParams connection = new NoPwdConnectionParams();
+		private HttpRequestMessage Request;
+		public BOResult(HttpRequestMessage rm) {
+			Request = rm;
+		}
+		Task<HttpResponseMessage> IHttpActionResult.ExecuteAsync(CancellationToken cancellationToken) {
+			if (Request == null) throw new SQLBrokerError("Request object not initialized", boResult: this);
+			return Task.FromResult(Request.CreateResponse<BOResult>(this.statusCode, this));
+		}
+		public BOResult setResponseStatus(HttpStatusCode status, Exception e) {
+			statusCode = status;
+			if (errorCode == 0) errorCode = -1;
+			if (string.IsNullOrEmpty(errorText)) errorText = e?.Message;
+			errorStackTrace = e?.StackTrace;
+			return this;
+		}
 	}
 }

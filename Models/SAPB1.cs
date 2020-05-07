@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SAPbobsCOM;
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
@@ -6,9 +7,24 @@ using System.Linq;
 using System.Web;
 
 namespace t11sqlbroker.Models {
+	public class SQLBrokerError : Exception {
+		public NoPwdConnectionParams connection;
+		public SQLResult sqlResult;
+		public BOResult boResult;
+		public SQLBrokerConfig config;
+		public SQLBrokerError(string message, Exception innerException = null,
+			ConnectionParams connection = null, SQLResult sqlResult = null, BOResult boResult = null) : base(message, innerException) {
+			config = SAPB1.brokerConf;
+			this.boResult = boResult;
+			this.sqlResult = sqlResult;
+			this.connection = new NoPwdConnectionParams(connection);
+			if (this.connection == null && boResult?.connection != null) this.connection = boResult?.connection;
+			if (this.connection == null && sqlResult?.connection != null) this.connection = sqlResult?.connection;
+		}
+	}
 	public static class SAPB1 {
-		static SQLBrokerConfig brokerConf = SQLBrokerConfig.GetBrokerConfig();
-		static ConnectionParams getEffectiveConnectionParams(ConnectionParams fromRequest, ConnectionParams resultConnectionReference) {
+		public static SQLBrokerConfig brokerConf = SQLBrokerConfig.GetBrokerConfig();
+		static ConnectionParams getEffectiveConnectionParams(ConnectionParams fromRequest, ref NoPwdConnectionParams resultConnectionReference) {
 			ConnectionParams cp = brokerConf.defaultConnection;
 			if (!string.IsNullOrEmpty(fromRequest?.CompanyDB)) { // Request contains connection params
 				if (brokerConf.connectionConfigFromCaller) {
@@ -34,52 +50,88 @@ namespace t11sqlbroker.Models {
 			}
 			if (cp == null) throw new Exception("No connection parameters are configured or sent by client");
 			else { //These are the effective connection parameters for reference to the caller
-				resultConnectionReference.CompanyDB = cp.CompanyDB;
-				resultConnectionReference.DbUserName = cp.DbUserName;
-				resultConnectionReference.UserName = cp.UserName;
-				resultConnectionReference.Server = cp.Server;
-				resultConnectionReference.Profile = cp.Profile;
-				resultConnectionReference.AdoNetUser = cp.AdoNetUser;
+				resultConnectionReference = new NoPwdConnectionParams(cp);
 			}
 			return cp;
 		}
-		public static SQLResult SQLQuery(SQLQuery q, bool fromGet) {
-			if (!brokerConf.sql) throw new Exception("SQL module was disabled in web.config for SQL Broker");
-			System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-			sw.Start();
-			SQLResult result = new SQLResult();
-			result.rollbackOnly = brokerConf.readOnly;
-			if (!result.rollbackOnly) {
-				result.rollbackOnly = brokerConf.readTransactionsOnSQLGet && fromGet;
-			}
-			if (result.rollbackOnly) {
-				var sqlText = q.SQL.ToLower();
+		static void checkRollbackOnlyConditions(bool rollbackOnly, string sql) {
+			if (rollbackOnly && !string.IsNullOrEmpty(sql)) {
+				var sqlText = sql.ToLower();
 				if (sqlText.Contains("transaction") || sqlText.Contains("commit")
 					|| sqlText.Contains("insert") || sqlText.Contains("update") || sqlText.Contains("delete")) {
 					throw new Exception("The server entirely or the GET request is configured for read-only transactions, and your"
-						+ " SQL contains the word(s): transaction, commit, insert, delete, update."
-						);
+						+ " SQL contains the word(s): transaction, commit, insert, delete, update.");
 					//This is the only measure we are doing for now, enforcing rollback only transaction is easy but an unnecessary extra step,
 					//To guarantee read-only access simply define a DB user/login for the profile that has no db_datawriter membership
 					//on the Company DB. Remember it must have db_datareader on both SBO-COMMON and CompanyDB.
 				}
 			}
-			var cp = getEffectiveConnectionParams(q?.connection, result.connection);
-			if (brokerConf.adonet) SQLADONETQuery(q, result, cp, result.rollbackOnly);
-			else SQLDIQuery(q, result, cp);
-			sw.Stop();
-			result.execMillis = (int)sw.Elapsed.TotalMilliseconds;
-			return result;
+		}
+		public static SQLResult SQLQuery(SQLQuery q, bool fromGet, SQLResult result) {
+			System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+			sw.Start();
+			try {
+				result.rollbackOnly = brokerConf.readOnly;
+				if (!result.rollbackOnly) {
+					result.rollbackOnly = brokerConf.readTransactionsOnSQLGet && fromGet;
+				}
+				checkRollbackOnlyConditions(result.rollbackOnly, q.SQL);
+				var cp = getEffectiveConnectionParams(q?.connection, ref result.connection);
+				if (brokerConf.adonet) SQLADONETQuery(q, result, cp, result.rollbackOnly);
+				else SQLDIQuery(q, result, cp);
+				sw.Stop();
+				result.execMillis = (int)sw.Elapsed.TotalMilliseconds;
+				return result;
+			} catch(Exception e) {
+				if (e is SQLBrokerError) throw;
+				else throw new SQLBrokerError(e.Message, innerException: e, sqlResult: result);
+			}
+		}
+		static string getUQCommandText(string qn,string cn) {
+			return $"select QString, QName,CatName from OUQR q join OQCN c on q.QCategory = c.CategoryId	where q.QName = '{qn}' and c.CatName = '{cn}'";
+		}
+		const string UQCATEGORY_EXTENSION = ".X";
+		static string getUserQuerySQL(SqlConnection t, SQLQuery q, ConnectionParams cp) {
+			using (SqlCommand uq = new SqlCommand { Connection = t}) {
+				uq.CommandText = getUQCommandText(q.userQuery, q.uqCategory + UQCATEGORY_EXTENSION);
+				string sqlString = uq.ExecuteScalar()?.ToString();
+				if(!string.IsNullOrEmpty(sqlString)) { // We have found an customized/extended version, which has priority
+					q.uqCategory += UQCATEGORY_EXTENSION;
+				} else uq.CommandText = getUQCommandText(q.userQuery, q.uqCategory);
+				using (SqlDataReader rs = uq.ExecuteReader(System.Data.CommandBehavior.Default)) {					
+					if(rs.Read()) {//found
+						string SQL = rs.GetString(rs.GetOrdinal("QString"));
+						string catName = rs.GetString(rs.GetOrdinal("CatName"));
+						if(!string.IsNullOrEmpty(brokerConf.exposedUQCategories)) {
+							if (!brokerConf.exposedUQCategories.ToLower().Contains(q.userQuery.ToLower())){
+								throw new Exception($"Category {q.userQuery} is not exposed in {brokerConf.exposedUQCategories}");
+							}
+						}
+						//Substitute parameters
+						for(int i = 0; i < q.parameters.Length; i++) {
+							SQL = SQL.Replace($"[%{i}]", q.parameters[i]);
+						}
+						if(!string.IsNullOrEmpty(q.lang)) SQL = SQL.Replace($"[lang]", q.lang);
+						return SQL;
+					} else {
+						throw new Exception($"User Query {q.userQuery} not found");
+					}
+				}
+			}
 		}
 		static void SQLADONETQuery(SQLQuery q, SQLResult result, ConnectionParams cp, bool rollbackOnly) {
 			using (SqlConnection t = new SqlConnection(cp.getConnectionString())) //{ t.Open();
-			using (SqlCommand sqlCommand = new SqlCommand(q.SQL, t)) {
-				//try {
+			using (SqlCommand sqlCommand = new SqlCommand { Connection = t }) {
 				sqlCommand.Connection.Open();
-				//When the server is configured to enforce read only access
-				//Simply, use a DB User that has no db_datawriter role membership.
-				//if (rollbackOnly) sqlCommand.Transaction = t.BeginTransaction();
-				if (q.timeOut > 0) sqlCommand.CommandTimeout = q.timeOut;
+				if (!string.IsNullOrEmpty(q.userQuery)) {
+					if (!string.IsNullOrEmpty(q.SQL)) throw new Exception("SQL must be empty for a user query request");
+					q.SQL = getUserQuerySQL(t, q,cp);
+					checkRollbackOnlyConditions(result.rollbackOnly, q.SQL);
+				}
+				result.SQL = q.SQL;
+				result.userQuery = !string.IsNullOrEmpty(q.userQuery) ? q.uqCategory + "." + q.userQuery : null;
+				result.extendedUQ = q.uqCategory != null && q.uqCategory.EndsWith(UQCATEGORY_EXTENSION);
+				sqlCommand.CommandText = q.SQL;
 				using (SqlDataReader rs = sqlCommand.ExecuteReader(System.Data.CommandBehavior.Default)) {
 					result.statusCode = System.Net.HttpStatusCode.OK;
 					var data = new Newtonsoft.Json.Linq.JArray();
@@ -103,17 +155,8 @@ namespace t11sqlbroker.Models {
 							}
 						}
 					} while (rs.NextResult());
-					//}
-					//					} finally {
-					// No need for this, it's much better and dead easy to revoke the user db_datawriter membership
-					//if (sqlCommand.Transaction != null) {
-					//	if (rollbackOnly) sqlCommand.Transaction.Rollback();
-					//	else sqlCommand.Transaction.Commit();
-					//}
 				}
 			}
-			//		t.Close();
-			//		}
 		}
 
 		static void SQLDIQuery(SQLQuery q, SQLResult result, ConnectionParams cp) {
@@ -151,56 +194,50 @@ namespace t11sqlbroker.Models {
 				}
 			}
 		}
-		/// <summary>
-		/// The generic business logic behind SAP DI BO requests: GET, POST/Add, PUT/Update, DELETE/Delete
-		/// </summary>
-		/// <param name="q"></param>
-		/// <param name="name"></param>
-		/// <param name="id"></param>
-		/// <param name="delete"></param>
-		/// <param name="put"></param>
-		/// <param name="post"></param>
-		/// <returns></returns>
-		public static BOResult BORequest(BORequest q, string name, string id, bool delete = false, bool put = false, bool post = false) {
-			if (!brokerConf.bo) throw new Exception("SAP B1 BO module was disabled in web.config for SQL Broker");
+		public static BOResult BORequest(BORequest q, string name, string id, BOResult result, bool delete = false, bool put = false, bool post = false) {
+			if (!brokerConf.bo) throw new SQLBrokerError("SAP B1 BO module was disabled in web.config for SQL Broker");
 			System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
 			sw.Start();
-			BOResult result = new BOResult();
-			var cp = getEffectiveConnectionParams(q?.connection, result.connection);
-			using (var t = DIConnection.startTransaction(cp)) { //Must be used with using !!!
-				string cuXml = q.boXml;
-				if (string.IsNullOrEmpty(cuXml)) {
-					if (q.bo != null) {
-						System.Xml.XmlDocument xmlDoc = Newtonsoft.Json.JsonConvert.DeserializeXmlNode(q.bo.ToString());
-						cuXml = xmlDoc.OuterXml; // Maybe xmlDoc.ToString() would be OK, too
+			try { 
+				var cp = getEffectiveConnectionParams(q?.connection, ref result.connection);
+				using (var t = DIConnection.startTransaction(cp)) { //Must be used with using !!!
+					string cuXml = q.boXml;
+					if (string.IsNullOrEmpty(cuXml)) {
+						if (q.bo != null) {
+							System.Xml.XmlDocument xmlDoc = Newtonsoft.Json.JsonConvert.DeserializeXmlNode(q.bo.ToString());
+							cuXml = xmlDoc.OuterXml; // Maybe xmlDoc.ToString() would be OK, too
+						}
 					}
-				}
-				result.found = true;
-				string xmlText = crudBO(t, name, ref id, cuXml, delete, put, post, q.xmlSchema, ref result.xmlSchema, ref result.found);
-				result.id = id;//For newly created objects the BO id is returned
-				result.statusCode = System.Net.HttpStatusCode.OK;
-				if (string.IsNullOrEmpty(xmlText)) {
-					if (!result.found) {
-						result.statusCode = System.Net.HttpStatusCode.NotFound;
-						result.errorCode = (int)System.Net.HttpStatusCode.NotFound;
-						result.errorText = $"Not found {name} for ID {id}";
+					result.found = true;
+					string xmlText = crudBO(t, name, ref id, cuXml, delete, put, post, q.xmlSchema, ref result.xmlSchema, ref result.found);
+					result.id = id;//For newly created objects the BO id is returned
+					result.statusCode = System.Net.HttpStatusCode.OK;
+					if (string.IsNullOrEmpty(xmlText)) {
+						if (!result.found) {
+							result.statusCode = System.Net.HttpStatusCode.NotFound;
+							result.errorCode = (int)System.Net.HttpStatusCode.NotFound;
+							result.errorText = $"Not found {name} for ID {id}";
+						} else {
+							if (delete) result.statusCode = System.Net.HttpStatusCode.Gone;
+						}
 					} else {
-						if (delete) result.statusCode = System.Net.HttpStatusCode.Gone;
+						if (post) result.statusCode = System.Net.HttpStatusCode.Created;
+						//Is there a way to find out, when PUT/Update was requested, if nodified or not?
+						//Possibly the Not Modified HTTP is a situation when the update was rejected because of some reasons.
+						//if (put) result.statusCode = System.Net.HttpStatusCode.NotModified;
+						if (q.rawXml) result.rawXml = xmlText;
+						System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
+						xmlDoc.LoadXml(xmlText);
+						string jsonText = Newtonsoft.Json.JsonConvert.SerializeXmlNode(xmlDoc, Newtonsoft.Json.Formatting.Indented, false);
+						result.bo = Newtonsoft.Json.Linq.JToken.Parse(jsonText);
 					}
-				} else {
-					if (post) result.statusCode = System.Net.HttpStatusCode.Created;
-					//Is there a way to find out, when PUT/Update was requested, if nodified or not?
-					//Possibly the Not Modified HTTP is a situation when the update was rejected because of some reasons.
-					//if (put) result.statusCode = System.Net.HttpStatusCode.NotModified;
-					if (q.rawXml) result.rawXml = xmlText;
-					System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
-					xmlDoc.LoadXml(xmlText);
-					string jsonText = Newtonsoft.Json.JsonConvert.SerializeXmlNode(xmlDoc, Newtonsoft.Json.Formatting.Indented, false);
-					result.bo = Newtonsoft.Json.Linq.JToken.Parse(jsonText);
+					sw.Stop();
+					result.execMillis = (int)sw.Elapsed.TotalMilliseconds;
+					return result;
 				}
-				sw.Stop();
-				result.execMillis = (int)sw.Elapsed.TotalMilliseconds;
-				return result;
+			} catch (Exception e) {
+				if (e is SQLBrokerError) throw;
+				else throw new SQLBrokerError(e.Message, innerException: e, boResult: result);
 			}
 		}
 		static string crudBO(DIConnection.IConnRef t, string name, ref string id, string bstrXML, 
