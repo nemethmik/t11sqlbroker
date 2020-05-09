@@ -663,6 +663,26 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:t11sqlbroker.Models.MultiRequest">
+            <summary>
+            Multi-Requests are supported only for SAP DI, that is the whole point.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.MReqJob.reqType">
+            <summary>
+            GET, PUT/Update, POST/Add, DELETE/Delete/Cancel 
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.MReqJob.boName">
+            <summary>
+            If the BO name is not defined on the URI then this an alternative possibility
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.MReqJob.boId">
+            <summary>
+            ID is required for GET, PUT, DELETE requests
+            </summary>
+        </member>
         <member name="T:t11sqlbroker.Models.BORequest">
             <summary>
             The BO request data for GET, POST, PUT and DELETE requests.
@@ -766,9 +786,50 @@
             The language of customized messages
             </summary>
         </member>
+        <member name="F:t11sqlbroker.Models.MultiResult.statusCode">
+            <summary>
+            The HTTP status code.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.MultiResult.errorCode">
+            <summary>
+            The error code, if there is an error.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.MultiResult.errorText">
+            <summary>
+            If there is an error the error text.
+            If not found the HTTP not Found status code is here
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.MultiResult.errorStackTrace">
+            <summary>
+            Error stack trace for debugging purposes
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.MultiResult.execMillis">
+            <summary>
+            The milliseconds of the execution time for performance benchmarking purposes. 
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.MultiResult.results">
+            <summary>
+            The array of the results of the requested jobs
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.MReqResult.sqlResult">
+            <summary>
+            GET, PUT/Update, POST/Add, DELETE/Delete/Cancel 
+            </summary>
+        </member>
         <member name="T:t11sqlbroker.Models.BOResult">
             <summary>
             The result object for the HTTP response for BO Requests
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BOResult.jobNumber">
+            <summary>
+            In multi-jobs requests the job index number starting with 0
             </summary>
         </member>
         <member name="F:t11sqlbroker.Models.BOResult.statusCode">
@@ -827,6 +888,16 @@
             <summary>
             The effective connection details: Profile, CompanyDB, Server, DBUser, UserName.
             No passwords and no other details are returned.
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BOResult.reqType">
+            <summary>
+            GET, PUT/Update, POST/Add, DELETE/Delete/Cancel 
+            </summary>
+        </member>
+        <member name="F:t11sqlbroker.Models.BOResult.boName">
+            <summary>
+            If the BO name is not defined on the URI then this an alternative possibility
             </summary>
         </member>
         <member name="T:t11sqlbroker.Models.SQLResult">

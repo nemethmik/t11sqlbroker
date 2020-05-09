@@ -24,7 +24,7 @@ namespace t11sqlbroker.Models {
 	}
 	public static class SAPB1 {
 		public static SQLBrokerConfig brokerConf = SQLBrokerConfig.GetBrokerConfig();
-		static ConnectionParams getEffectiveConnectionParams(ConnectionParams fromRequest, ref NoPwdConnectionParams resultConnectionReference) {
+		public static ConnectionParams getEffectiveConnectionParams(ConnectionParams fromRequest, ref NoPwdConnectionParams resultConnectionReference) {
 			ConnectionParams cp = brokerConf.defaultConnection;
 			if (!string.IsNullOrEmpty(fromRequest?.CompanyDB)) { // Request contains connection params
 				if (brokerConf.connectionConfigFromCaller) {
@@ -194,52 +194,118 @@ namespace t11sqlbroker.Models {
 				}
 			}
 		}
+		public static BOResult BOJob(DIConnection.IConnRef t, BORequest q, string name, string id, BOResult result, bool delete = false, bool put = false, bool post = false) {
+			if (!brokerConf.bo) throw new SQLBrokerError("SAP B1 BO module was disabled in web.config for SQL Broker");
+			System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+			sw.Start();
+			result.boName = name;
+			result.reqType = post ? "POST" : (delete ? "DELETE" : (put ? "PUT" : "GET"));
+			if (string.IsNullOrEmpty(id)) result.id = id;
+			try {
+				string cuXml = q.boXml;
+				if (string.IsNullOrEmpty(cuXml)) {
+					if (q.bo != null) {
+						System.Xml.XmlDocument xmlDoc = Newtonsoft.Json.JsonConvert.DeserializeXmlNode(q.bo.ToString());
+						cuXml = xmlDoc.OuterXml; // Maybe xmlDoc.ToString() would be OK, too
+					}
+				}
+				result.found = true;
+				string xmlText = crudBO(t, name, ref id, cuXml, delete, put, post, q.xmlSchema, ref result.xmlSchema, ref result.found);
+				result.id = id;//For newly created objects the BO id is returned
+				result.statusCode = System.Net.HttpStatusCode.OK;
+				if (string.IsNullOrEmpty(xmlText)) {
+					if (!result.found) {
+						result.statusCode = System.Net.HttpStatusCode.NotFound;
+						result.errorCode = (int)System.Net.HttpStatusCode.NotFound;
+						result.errorText = $"Not found {name} for ID {id}";
+					} else {
+						if (delete) result.statusCode = System.Net.HttpStatusCode.Gone;
+					}
+				} else {
+					if (post) result.statusCode = System.Net.HttpStatusCode.Created;
+					//Is there a way to find out, when PUT/Update was requested, if nodified or not?
+					//Possibly the Not Modified HTTP is a situation when the update was rejected because of some reasons.
+					//if (put) result.statusCode = System.Net.HttpStatusCode.NotModified;
+					if (q.rawXml) result.rawXml = xmlText;
+					System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
+					xmlDoc.LoadXml(xmlText);
+					string jsonText = Newtonsoft.Json.JsonConvert.SerializeXmlNode(xmlDoc, Newtonsoft.Json.Formatting.Indented, false);
+					result.bo = Newtonsoft.Json.Linq.JToken.Parse(jsonText);
+				}
+				return result;
+			} catch (Exception e) {
+				if (e is SQLBrokerError) throw;
+				else throw new SQLBrokerError(e.Message, innerException: e, boResult: result);
+			} finally {
+				sw.Stop();
+				result.execMillis = (int)sw.Elapsed.TotalMilliseconds;
+			}
+		}
 		public static BOResult BORequest(BORequest q, string name, string id, BOResult result, bool delete = false, bool put = false, bool post = false) {
 			if (!brokerConf.bo) throw new SQLBrokerError("SAP B1 BO module was disabled in web.config for SQL Broker");
 			System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
 			sw.Start();
-			try { 
+			try {
 				var cp = getEffectiveConnectionParams(q?.connection, ref result.connection);
 				using (var t = DIConnection.startTransaction(cp)) { //Must be used with using !!!
-					string cuXml = q.boXml;
-					if (string.IsNullOrEmpty(cuXml)) {
-						if (q.bo != null) {
-							System.Xml.XmlDocument xmlDoc = Newtonsoft.Json.JsonConvert.DeserializeXmlNode(q.bo.ToString());
-							cuXml = xmlDoc.OuterXml; // Maybe xmlDoc.ToString() would be OK, too
-						}
-					}
-					result.found = true;
-					string xmlText = crudBO(t, name, ref id, cuXml, delete, put, post, q.xmlSchema, ref result.xmlSchema, ref result.found);
-					result.id = id;//For newly created objects the BO id is returned
-					result.statusCode = System.Net.HttpStatusCode.OK;
-					if (string.IsNullOrEmpty(xmlText)) {
-						if (!result.found) {
-							result.statusCode = System.Net.HttpStatusCode.NotFound;
-							result.errorCode = (int)System.Net.HttpStatusCode.NotFound;
-							result.errorText = $"Not found {name} for ID {id}";
-						} else {
-							if (delete) result.statusCode = System.Net.HttpStatusCode.Gone;
-						}
-					} else {
-						if (post) result.statusCode = System.Net.HttpStatusCode.Created;
-						//Is there a way to find out, when PUT/Update was requested, if nodified or not?
-						//Possibly the Not Modified HTTP is a situation when the update was rejected because of some reasons.
-						//if (put) result.statusCode = System.Net.HttpStatusCode.NotModified;
-						if (q.rawXml) result.rawXml = xmlText;
-						System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
-						xmlDoc.LoadXml(xmlText);
-						string jsonText = Newtonsoft.Json.JsonConvert.SerializeXmlNode(xmlDoc, Newtonsoft.Json.Formatting.Indented, false);
-						result.bo = Newtonsoft.Json.Linq.JToken.Parse(jsonText);
-					}
-					sw.Stop();
-					result.execMillis = (int)sw.Elapsed.TotalMilliseconds;
+					BOJob(t, q, name, id, result, delete, put, post);
 					return result;
 				}
 			} catch (Exception e) {
 				if (e is SQLBrokerError) throw;
 				else throw new SQLBrokerError(e.Message, innerException: e, boResult: result);
+			} finally {
+				sw.Stop();
+				result.execMillis = (int)sw.Elapsed.TotalMilliseconds;
 			}
 		}
+
+		//public static BOResult BORequest(BORequest q, string name, string id, BOResult result, bool delete = false, bool put = false, bool post = false) {
+		//	if (!brokerConf.bo) throw new SQLBrokerError("SAP B1 BO module was disabled in web.config for SQL Broker");
+		//	System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+		//	sw.Start();
+		//	try { 
+		//		var cp = getEffectiveConnectionParams(q?.connection, ref result.connection);
+		//		using (var t = DIConnection.startTransaction(cp)) { //Must be used with using !!!
+		//			string cuXml = q.boXml;
+		//			if (string.IsNullOrEmpty(cuXml)) {
+		//				if (q.bo != null) {
+		//					System.Xml.XmlDocument xmlDoc = Newtonsoft.Json.JsonConvert.DeserializeXmlNode(q.bo.ToString());
+		//					cuXml = xmlDoc.OuterXml; // Maybe xmlDoc.ToString() would be OK, too
+		//				}
+		//			}
+		//			result.found = true;
+		//			string xmlText = crudBO(t, name, ref id, cuXml, delete, put, post, q.xmlSchema, ref result.xmlSchema, ref result.found);
+		//			result.id = id;//For newly created objects the BO id is returned
+		//			result.statusCode = System.Net.HttpStatusCode.OK;
+		//			if (string.IsNullOrEmpty(xmlText)) {
+		//				if (!result.found) {
+		//					result.statusCode = System.Net.HttpStatusCode.NotFound;
+		//					result.errorCode = (int)System.Net.HttpStatusCode.NotFound;
+		//					result.errorText = $"Not found {name} for ID {id}";
+		//				} else {
+		//					if (delete) result.statusCode = System.Net.HttpStatusCode.Gone;
+		//				}
+		//			} else {
+		//				if (post) result.statusCode = System.Net.HttpStatusCode.Created;
+		//				//Is there a way to find out, when PUT/Update was requested, if nodified or not?
+		//				//Possibly the Not Modified HTTP is a situation when the update was rejected because of some reasons.
+		//				//if (put) result.statusCode = System.Net.HttpStatusCode.NotModified;
+		//				if (q.rawXml) result.rawXml = xmlText;
+		//				System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
+		//				xmlDoc.LoadXml(xmlText);
+		//				string jsonText = Newtonsoft.Json.JsonConvert.SerializeXmlNode(xmlDoc, Newtonsoft.Json.Formatting.Indented, false);
+		//				result.bo = Newtonsoft.Json.Linq.JToken.Parse(jsonText);
+		//			}
+		//			sw.Stop();
+		//			result.execMillis = (int)sw.Elapsed.TotalMilliseconds;
+		//			return result;
+		//		}
+		//	} catch (Exception e) {
+		//		if (e is SQLBrokerError) throw;
+		//		else throw new SQLBrokerError(e.Message, innerException: e, boResult: result);
+		//	}
+		//}
 		static string crudBO(DIConnection.IConnRef t, string name, ref string id, string bstrXML, 
 			bool delete, bool put, bool post, bool schemaRequired, ref string xmlSchema, ref bool found) {
 			if (post) { //Add new activity

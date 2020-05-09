@@ -5,6 +5,29 @@ using System.Web;
 
 namespace t11sqlbroker.Models {
 	/// <summary>
+	/// Multi-Requests are supported only for SAP DI, that is the whole point.
+	/// </summary>
+	public class MultiRequest {
+		public ConnectionParams connection;
+		public List<MReqJob> requests;
+	}
+	public class MReqJob {
+		/// <summary>
+		/// GET, PUT/Update, POST/Add, DELETE/Delete/Cancel 
+		/// </summary>
+		public string reqType;
+		/// <summary>
+		/// If the BO name is not defined on the URI then this an alternative possibility
+		/// </summary>
+		public string boName;
+		/// <summary>
+		/// ID is required for GET, PUT, DELETE requests
+		/// </summary>
+		public string boId;
+		public SQLQuery sqlReq;
+		public BORequest boReq;
+	}
+	/// <summary>
 	/// The BO request data for GET, POST, PUT and DELETE requests.
 	/// The HTTP response codes:
 	/// GET - 404 Not Found, 200 OK
@@ -18,14 +41,6 @@ namespace t11sqlbroker.Models {
 		/// the client can send in the connection parameters.
 		/// </summary>
 		public ConnectionParams connection;
-		/// <summary>
-		/// If the BO name is not defined on the URI then this an alternative possibility
-		/// </summary>
-		//public string boName;
-		/// <summary>
-		/// GET (default) | ADD or POST | UPDATE or PUT | DELETE
-		/// </summary>
-		//public string command;
 		/// <summary>
 		/// The timeout of the query in seconds
 		/// </summary>
