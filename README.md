@@ -1,4 +1,5 @@
 # SQL Broker on ADO.NET and Docker
+## About to Relocate over to Azure DevOps
 
 ## Motivation
 This is a terribly powerful and flexible server to execute any SQL operations against an SQL database as well as support specifically SAP Business One User Queries and BUsiness Objects via the SAP B1 DI API.
